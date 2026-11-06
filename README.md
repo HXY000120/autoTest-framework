@@ -275,3 +275,20 @@ python perf/adb_monitor.py --pkg com.example.news --duration 60
 
 流水线默认**不设 RUN_REAL**：真实环境用例跳过，34 条虚拟接口用例照常执行，
 因此构建不依赖任何外部服务可用性，随时可稳定回归。
+
+## 提交信息规范
+
+统一用 `type: 简短描述`，一条提交只做一件事，便于回溯框架演进过程。
+
+| type | 用途 |
+| --- | --- |
+| `feat` | 新增框架能力 / 业务用例 |
+| `fix` | 修复缺陷 |
+| `test` | 新增或调整测试用例 |
+| `docs` | README、注释、文档 |
+| `refactor` | 不改变行为的结构调整 |
+| `ci` | Jenkinsfile / 流水线配置 |
+| `chore` | 依赖、忽略规则等杂项 |
+
+示例：`test: 新增登录参数边界用例`、`fix: 显式等待避免表格 stale element`。
+**禁止** `update` / `修改` / `123` 这类无信息量的提交信息。
