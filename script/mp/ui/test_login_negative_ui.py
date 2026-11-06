@@ -6,7 +6,6 @@
 import time
 
 import pytest
-from selenium.webdriver.common.by import By
 
 from common.config.settings import get_credentials, get_endpoint
 from common.utils.data_reader import load_data
@@ -18,6 +17,8 @@ cases = load_data("mp/ui/login_negative_cases.yaml")
 @pytest.mark.mp
 @pytest.mark.parametrize("case", cases, ids=[c["case_id"] for c in cases])
 def test_mp_login_negative_ui(mp_web, case):
+    from selenium.webdriver.common.by import By
+
     base = get_endpoint("mp")["base_url"]
     page = mp_web.login_page
     page.open(f"{base}/#/login")

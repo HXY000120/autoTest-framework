@@ -5,7 +5,6 @@
 中以「维护中则 skip」的方式诚实标注。
 """
 import pytest
-from selenium.webdriver.common.by import By
 
 from common.config.settings import get_credentials, get_endpoint
 from common.utils.data_reader import load_data
@@ -54,6 +53,8 @@ def test_publish_form_validation(mp_web, case):
 @pytest.mark.mp
 def test_publish_page_elements(mp_web):
     """发布页关键元素必须齐全，否则后续用例会静默失效。"""
+    from selenium.webdriver.common.by import By
+
     editor = _login_and_open_editor(mp_web)
     d = editor.driver
     assert d.find_elements(By.CSS_SELECTOR, "input[placeholder='请在这里输入标题']")

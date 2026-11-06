@@ -5,9 +5,6 @@ App 端特有的 swipe / toast 在 base/app_base 中扩展。
 """
 
 
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
-
 from common.logger.logger import get_logger
 
 log = get_logger("web_base")
@@ -19,6 +16,12 @@ class UIBase:
         self.timeout = timeout
 
     def find(self, loc):
+        # selenium 延迟导入：pytest 收集阶段会 import 本模块（经 AppBase /
+        # ScrollHelper 等），若顶层导入 selenium，CI 只装 requirements.txt
+        # 时会直接收集报错，而不是「缺依赖自动 skip」。
+        from selenium.webdriver.support import expected_conditions as EC
+        from selenium.webdriver.support.wait import WebDriverWait
+
         log.info("查找元素: %s", loc)
         return WebDriverWait(self.driver, self.timeout).until(
             EC.visibility_of_element_located(loc)
