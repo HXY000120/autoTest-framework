@@ -1,0 +1,47 @@
+运行证据（自动生成，请勿手工修改）
+命令: pytest -q
+环境: Python 3.12.6 | 工作目录 autoTest 根目录
+生成时间: 2026-11-06 15:47:07
+说明: 默认离线模式，不发真实请求；skipped 用例均因未配置外部地址 / 无真机，skip 原因见输出末尾。
+------------------------------------------------------------
+
+.....s........sss...............ssss..........ssssssss.sssssssssssss..ss [ 39%]
+sssssssssss.sssssssss.......ssssss.sssssssssssssss..ssssssssssssssssssss [ 78%]
+...ss...........sssss.....sssss.sssss.ss                                 [100%]
+=========================== short test summary info ===========================
+SKIPPED [1] script\app\api\test_app_api.py:109: 当前环境未部署 APP 端接口服务（UI 用示例新闻 App替代）；配置 endpoints.app.base_url 后本用例自动转为真实联调
+SKIPPED [2] script\app\ui\test_article_ui.py:9: 未安装 appium，跳过 App 用例
+SKIPPED [1] script\app\ui\test_login_ui.py:9: 未安装 appium，跳过 App 用例
+SKIPPED [2] script\mis\api\test_audit_api.py:17: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [1] script\mis\api\test_audit_api.py:39: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [1] script\mis\api\test_audit_api.py:54: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [8] script\mis\api\test_audit_param_api.py:24: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [12] script\mis\api\test_auth_list_api.py:17: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [1] script\mis\api\test_auth_list_api.py:40: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [2] script\mis\api\test_login_api.py:31: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [1] script\mis\api\test_login_api.py:54: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [10] script\mis\api\test_login_param_api.py:13: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [2] script\mis\ui\test_audit_ui.py:16: 未配置 MIS_BASE_URL，跳过 Web UI 用例（见 README「被测环境配置」）
+SKIPPED [1] script\mis\ui\test_login_ui.py:10: 未配置 MIS_BASE_URL，跳过 Web UI 用例（见 README「被测环境配置」）
+SKIPPED [6] script\mp\api\test_article_api.py:16: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [5] script\mp\api\test_auth_api.py:35: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [1] script\mp\api\test_auth_api.py:65: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [2] script\mp\api\test_login_api.py:32: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [1] script\mp\api\test_login_api.py:56: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [12] script\mp\api\test_login_param_api.py:18: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [18] script\mp\api\test_news_list_api.py:22: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [1] script\mp\api\test_news_list_api.py:52: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [1] script\mp\api\test_news_list_api.py:71: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [2] script\mp\api\test_publish_api.py:27: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [3] script\mp\api\test_search_api.py:24: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [1] script\mp\api\test_search_api.py:46: 设置 RUN_REAL=1 才跑真实接口
+SKIPPED [1] script\mp\ui\test_article_ui.py:9: 发布接口在当前环境维护中（接口返回 code=900001），UI 发布流程暂无法验证；环境恢复后移除本 skip 即可
+SKIPPED [5] script\mp\ui\test_login_negative_ui.py:16: 未配置 MP_BASE_URL，跳过 Web UI 用例（见 README「被测环境配置」）
+SKIPPED [1] script\mp\ui\test_login_ui.py:10: 未配置 MP_BASE_URL，跳过 Web UI 用例（见 README「被测环境配置」）
+SKIPPED [3] script\mp\ui\test_publish_ui.py:28: 未配置 MP_BASE_URL，跳过 Web UI 用例（见 README「被测环境配置」）
+SKIPPED [1] script\mp\ui\test_publish_ui.py:52: 未配置 MP_BASE_URL，跳过 Web UI 用例（见 README「被测环境配置」）
+SKIPPED [1] script\mp\ui\test_search_ui.py:26: 搜索正向用例依赖具体页面的检索规则，未与被测页面核对前保持 skip，确认规则后启用本用例即可
+SKIPPED [1] script\mp\ui\test_search_ui.py:48: 未配置 MP_BASE_URL，跳过 Web UI 用例（见 README「被测环境配置」）
+73 passed, 111 skipped in 28.24s
+
+[exit code] 0

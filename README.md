@@ -1,11 +1,59 @@
 # 今日资讯平台测试项目 — 自动化测试框架（PO 模式）
 
-新闻资讯平台，含自媒体端（发布）、后台审核端（审核）、APP 端（浏览）三端；
-本人独立完成三端测试设计与脚本开发。
+新闻资讯平台，含自媒体端（发布）、后台审核端（审核）、APP 端（浏览）三端。
+本项目为**个人实践项目**：独立完成测试框架的分层设计、用例设计与脚本开发；
+被测系统无源码，按黑盒方式抓包逆向接口，并用本地虚拟接口服务补齐不可用的依赖。
 
-按 **业务端（mp（自媒体端） / mis（后台审核端） / app）× 技术栈（api / web / app）** 双维度组织的
-单仓库 PO 框架。被测对象封装在 `page/`，用例只写在 `script/`，技术基座与
-基础设施下沉到 `base/` 与 `common/`，测试数据外置到 `data/`（YAML）。
+> **适用岗位**：软件测试 / 自动化测试 / 测试开发（应届 · 实习）
+> **一键运行**：`pip install -r requirements.txt && pytest` —— 不联网、无需任何配置
+
+## 项目概览
+
+| 项 | 内容 |
+| --- | --- |
+| 技术栈 | Python · Pytest · Requests · Selenium · Appium（PO 骨架）· YAML · Locust · adb · Jenkins · Allure |
+| 分层设计 | `base` 技术基座 / `page` PO + API Object + entry 门面 / `script` 用例 / `common` 基础设施 / `data` YAML |
+| 执行隔离 | 技术维度 `pytest -m api/web/app/mock` ＋ 业务维度 `TEST_TARGET=mp/mis/app` |
+| 用例规模 | **184 条**收集用例；默认离线 **73 passed / 111 skipped，0 失败** |
+| 业务闭环 | 发布 → 审核通过/驳回 → 状态流转 → APP 文章流可见性（有状态虚拟服务） |
+| 工程能力 | Jenkins 三阶段流水线 · Allure 报告 · 失败自动截图 · 日志 · 异常捕获 · 幂等重试 |
+| 文档 | [测试点矩阵](docs/test-points.md) · [技术难点与解决](docs/tech-highlights.md) · [真实运行证据](docs/evidence/) |
+
+## 架构概览
+
+```mermaid
+flowchart TB
+    S["script/ 用例层<br/>mp · mis · app ｜ api · ui"] --> EN["page/*/entry.py 统一门面"]
+    EN --> PO["page/ 页面对象 & API Object<br/>只封装操作，零断言"]
+    PO --> BASE["base/ UIBase · WebBase · AppBase · ApiClient<br/>统一 headers · token · 重试 · 日志"]
+    BASE --> CMN["common/ config · logger · assertion · report · utils · driver"]
+    DATA["data/ YAML 用例数据"] -.参数化.-> S
+    MOCK["common/mock 本地虚拟接口服务"] -.补齐不可用依赖.-> BASE
+    PERF["perf/ Locust · adb"] -.复用 API Object.-> PO
+    JEN["Jenkinsfile"] -.驱动.-> S
+```
+
+```mermaid
+sequenceDiagram
+    participant MP as 自媒体端 mp
+    participant SVC as Mock Server
+    participant MIS as 后台审核端 mis
+    participant APP as APP 端
+    MP->>SVC: 发布文章（标题 / 内容校验）
+    SVC-->>MP: 文章 id，状态 = 待审核(1)
+    APP->>SVC: 拉取文章流
+    SVC-->>APP: 不含待审核文章
+    MIS->>SVC: 审核通过 / 驳回（含原因）
+    SVC-->>MIS: 状态 = 通过(4) / 驳回(2)，写审核日志
+    MP->>SVC: 按 status=4 查询
+    SVC-->>MP: 命中该文章
+    APP->>SVC: 再次拉取文章流
+    SVC-->>APP: 已通过文章可见
+```
+
+按 **业务端（mp / mis / app）× 技术栈（api / web / app）** 双维度组织；
+被测对象封装在 `page/`，用例只写在 `script/`，技术基座下沉到 `base/`，
+测试数据外置到 `data/`（YAML）。
 
 ## 目录结构
 
@@ -26,6 +74,8 @@ autoTest/
 ├── Jenkinsfile  # ⑦ CI/CD 流水线（接口 / Web / App 三阶段 + Allure）
 ├── conftest.py  # ⑧ sys.path + TEST_TARGET 隔离 + mock fixture + 联调降级
 ├── pytest.ini   # ⑨ markers / testpaths / pythonpath
+├── docs/        # ⑩ 测试点矩阵 / 技术难点 / 真实运行证据
+├── LICENSE      # MIT
 └── requirements*.txt  # 按端拆分依赖
 ```
 
@@ -295,3 +345,12 @@ python perf/adb_monitor.py --pkg com.example.news --duration 60
 
 示例：`test: 新增登录参数边界用例`、`fix: 显式等待避免表格 stale element`。
 **禁止** `update` / `修改` / `123` 这类无信息量的提交信息。
+
+## 关于
+
+个人实践项目，用于软件测试 / 自动化测试岗位的求职展示。被测系统无源码，
+仓库只包含测试框架、用例、文档与运行证据；所有真实地址与账号均通过环境变量注入。
+
+- 联系邮箱：2401692547@qq.com
+- GitHub：https://github.com/HXY000120
+- 开源协议：MIT
