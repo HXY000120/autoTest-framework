@@ -1,0 +1,6 @@
+# mis 后台审核端 - Web UI 登录用例数据
+#
+# 该环境密码每天变化，use_config_password=true 时由配置按当天日期动态生成。
+- username: "demo"
+  use_config_password: true
+  expect_success: true

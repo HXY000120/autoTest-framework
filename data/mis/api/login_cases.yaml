@@ -1,0 +1,12 @@
+# mis 后台审核端 - 接口登录用例数据
+#
+# 注意：该环境正确密码每天变化（格式为 前缀 + 当天日期），
+# 由配置 credentials.mis.password_pattern 动态生成，
+# 因此「登录成功」场景不在此硬编码密码，改为标记 use_config 由配置提供。
+- desc: "正确账号（密码按当天日期动态生成）"
+  use_config: true
+  expect_success: true
+- desc: "错误密码"
+  use_config: false
+  password: "wrong_password_123"
+  expect_success: false

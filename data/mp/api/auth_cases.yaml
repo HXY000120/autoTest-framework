@@ -1,0 +1,22 @@
+# mp 鉴权链路用例：验证 Token 提取与复用的边界
+# token_mode 决定如何构造请求头；所有场景都断言「不得返回有效业务数据」
+# 不写死 401：不同网关对伪造 token 可能返回 401/403 或业务错误码
+- case_id: MP_AUTH_01
+  desc: 未带 token 访问文章列表（实测 HTTP 401）
+  token_mode: none
+
+- case_id: MP_AUTH_02
+  desc: 空字符串 token
+  token_mode: empty
+
+- case_id: MP_AUTH_03
+  desc: 伪造/篡改 token
+  token_mode: forged
+
+- case_id: MP_AUTH_04
+  desc: 误用 Authorization Bearer 头（实测 HTTP 401）
+  token_mode: bearer
+
+- case_id: MP_AUTH_05
+  desc: 把 mis 端 token 拿到 mp 端使用（跨端越权）
+  token_mode: cross_end

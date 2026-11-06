@@ -1,0 +1,50 @@
+# mis 审核动作 - 参数/异常用例
+# 全部使用不存在的 id 或缺失字段，绝不改动真实审核数据
+# check: reject（业务应拒绝但接口本身必须活着） | robust（只校验不 5xx）
+- case_id: MIS_AUDIT_01
+  desc: 文章审核通过 - 不存在的 id
+  check: reject
+  path_key: news_pass
+  payload: {id: 99999999}
+
+- case_id: MIS_AUDIT_02
+  desc: 文章审核驳回 - 不存在的 id
+  check: reject
+  path_key: news_fail
+  payload: {id: 99999999, msg: 自动化用例驳回}
+
+- case_id: MIS_AUDIT_03
+  desc: 文章审核通过 - 缺 id
+  check: robust
+  path_key: news_pass
+  payload: {}
+
+- case_id: MIS_AUDIT_04
+  desc: 文章审核驳回 - 缺驳回原因
+  check: robust
+  path_key: news_fail
+  payload: {id: 99999999}
+
+- case_id: MIS_AUDIT_05
+  desc: 文章审核通过 - id 为 0
+  check: robust
+  path_key: news_pass
+  payload: {id: 0}
+
+- case_id: MIS_AUDIT_06
+  desc: 文章审核通过 - id 为字符串
+  check: robust
+  path_key: news_pass
+  payload: {id: "not_a_number"}
+
+- case_id: MIS_AUDIT_07
+  desc: 用户认证通过 - 不存在的 id（环境维护中）
+  check: robust
+  path_key: auth_pass
+  payload: {id: 99999999}
+
+- case_id: MIS_AUDIT_08
+  desc: 用户认证驳回 - 不存在的 id
+  check: robust
+  path_key: auth_fail
+  payload: {id: 99999999, msg: 自动化用例驳回}

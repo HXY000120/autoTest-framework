@@ -1,0 +1,4 @@
+# mp 自媒体端 - Web UI 发布/文章详情用例数据
+- title: "PO发布测试"
+  content: "这是通过 PO 模式发布的文章内容"
+  expect_success: true

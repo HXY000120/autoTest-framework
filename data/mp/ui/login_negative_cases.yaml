@@ -1,0 +1,31 @@
+# mp Web 登录 - 异常场景（等价类 + 边界值 + 判定表）
+# 预期：均不得跳转离开登录页，也不得出现登录后的用户名元素
+- case_id: MP_UI_LOGIN_N01
+  desc: 错误密码
+  method: 等价类-无效
+  username: demo
+  password: wrong_password_123
+
+- case_id: MP_UI_LOGIN_N02
+  desc: 用户名为空
+  method: 边界值
+  username: ""
+  password: wrong_password_123
+
+- case_id: MP_UI_LOGIN_N03
+  desc: 密码为空
+  method: 边界值
+  username: demo
+  password: ""
+
+- case_id: MP_UI_LOGIN_N04
+  desc: 用户名与密码均为空
+  method: 判定表
+  username: ""
+  password: ""
+
+- case_id: MP_UI_LOGIN_N05
+  desc: 用户名含特殊字符
+  method: 安全性
+  username: "demo' OR '1'='1"
+  password: wrong_password_123

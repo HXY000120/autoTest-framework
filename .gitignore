@@ -1,0 +1,70 @@
+# ============================================================
+# 自动化测试框架 .gitignore
+# 原则：只提交源码 / 配置模板 / 文档，运行产物与本机环境一律不传
+# ============================================================
+
+# ---------- 本地环境变量（含账号密码、开关） ----------
+.env
+.env.*
+!.env.example
+
+# ---------- 运行产物：报告 / 截图 / 日志 ----------
+# 用 reports/* 而不是 reports/，才能用 ! 把 .gitkeep 救回来
+reports/*
+!reports/.gitkeep
+
+logs/*
+!logs/.gitkeep
+
+*.log
+chromedriver.log
+
+# Allure 原始结果与生成物
+# （本项目落在 reports/raw、reports/html，上面规则已覆盖，此处兜底其它位置）
+allure-results/
+allure-report/
+
+# pytest 缓存
+.pytest_cache/
+
+# ---------- Python 编译产物 ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 打包 / 构建
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ---------- 虚拟环境 ----------
+.venv/
+venv/
+env/
+ENV/
+
+# ---------- 测试覆盖率 ----------
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# ---------- IDE / 编辑器 ----------
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+*~
+
+# ---------- 操作系统 ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- 工具缓存 ----------
+.mypy_cache/
+.ruff_cache/
+.pyre/

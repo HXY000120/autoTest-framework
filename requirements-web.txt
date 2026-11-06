@@ -1,0 +1,7 @@
+# Web 端额外依赖（Selenium）
+-r requirements.txt
+selenium>=4.15
+# selenium 4.6+ 自带 Selenium Manager，会自动下载匹配的浏览器驱动，
+# 一般无需 webdriver-manager；若所在环境无法联网下载驱动，
+# 再启用下行并手动指定 executable_path。
+# webdriver-manager>=4.0

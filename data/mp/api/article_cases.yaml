@@ -1,0 +1,33 @@
+# mp 文章详情 / 上下架 - 参数用例
+# 注意：写操作一律用「不存在的 id」，避免污染真实数据
+- case_id: MP_ART_D01
+  desc: 查询已存在的文章详情
+  kind: detail_exist
+  article_id: 6468
+
+- case_id: MP_ART_D02
+  desc: 查询不存在的文章 id
+  kind: detail_missing
+  article_id: 99999999
+
+- case_id: MP_ART_D03
+  desc: 文章 id 为 0
+  kind: detail_invalid
+  article_id: 0
+
+- case_id: MP_ART_D04
+  desc: 文章 id 为负数
+  kind: detail_invalid
+  article_id: -1
+
+- case_id: MP_ART_U01
+  desc: 上架不存在的文章（业务应拒绝，接口不得 404/405/5xx）
+  kind: toggle_missing
+  article_id: 99999999
+  enable: 1
+
+- case_id: MP_ART_U02
+  desc: 下架不存在的文章
+  kind: toggle_missing
+  article_id: 99999999
+  enable: 0

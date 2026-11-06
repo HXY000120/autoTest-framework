@@ -1,0 +1,82 @@
+# mp 登录接口 - 异常/边界参数用例（等价类划分 + 边界值 + 安全性）
+# 断言统一走 assert_login_failed：不得 5xx、不得下发 token、必须是合法 JSON
+# 分组见 method 字段，便于面试时讲用例设计方法
+- case_id: MP_LOGIN_N01
+  desc: 错误密码（无效等价类）
+  method: 等价类-无效
+  payload:
+    name: demo
+    password: wrong_password_123
+
+- case_id: MP_LOGIN_N02
+  desc: 用户不存在（无效等价类）
+  method: 等价类-无效
+  payload:
+    name: no_such_user_zzz
+    password: wrong_password_123
+
+- case_id: MP_LOGIN_N03
+  desc: 用户名为空串（边界值）
+  method: 边界值
+  payload:
+    name: ""
+    password: wrong_password_123
+
+- case_id: MP_LOGIN_N04
+  desc: 密码为空串（边界值）
+  method: 边界值
+  payload:
+    name: demo
+    password: ""
+
+- case_id: MP_LOGIN_N05
+  desc: 缺少 name 字段（必填项校验）
+  method: 判定表
+  payload:
+    password: wrong_password_123
+
+- case_id: MP_LOGIN_N06
+  desc: 缺少 password 字段（必填项校验）
+  method: 判定表
+  payload:
+    name: demo
+
+- case_id: MP_LOGIN_N07
+  desc: 空请求体（两个必填项均缺失）
+  method: 判定表
+  payload: {}
+
+- case_id: MP_LOGIN_N08
+  desc: 用户名超长（长度边界）
+  method: 边界值
+  payload:
+    name: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    password: wrong_password_123
+
+- case_id: MP_LOGIN_N09
+  desc: 密码超长（长度边界）
+  method: 边界值
+  payload:
+    name: demo
+    password: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+
+- case_id: MP_LOGIN_N10
+  desc: SQL 注入样式用户名（安全）
+  method: 安全性
+  payload:
+    name: "demo' OR '1'='1"
+    password: wrong_password_123
+
+- case_id: MP_LOGIN_N11
+  desc: 用户名含特殊字符（等价类-非法字符）
+  method: 等价类-无效
+  payload:
+    name: "<script>alert(1)</script>"
+    password: wrong_password_123
+
+- case_id: MP_LOGIN_N12
+  desc: 用户名为纯空格（边界值-空白）
+  method: 边界值
+  payload:
+    name: "   "
+    password: wrong_password_123

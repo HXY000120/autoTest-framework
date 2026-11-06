@@ -1,0 +1,76 @@
+# mis 用户实名认证列表 - 分页 / 状态 / 字段契约用例
+# check: paging | contract | robust
+- case_id: MIS_AUTHL_01
+  desc: 正常分页 page=1 size=10
+  method: 等价类-有效
+  check: contract
+  payload: {page: 1, size: 10}
+  expect_fields: [id, userId, status]
+
+- case_id: MIS_AUTHL_02
+  desc: size=1 最小分页
+  method: 边界值
+  check: paging
+  payload: {page: 1, size: 1}
+  size: 1
+
+- case_id: MIS_AUTHL_03
+  desc: size=20
+  method: 边界值
+  check: paging
+  payload: {page: 1, size: 20}
+  size: 20
+
+- case_id: MIS_AUTHL_04
+  desc: page=0 下界
+  method: 边界值
+  check: robust
+  payload: {page: 0, size: 10}
+
+- case_id: MIS_AUTHL_05
+  desc: 负页码
+  method: 边界值-非法
+  check: robust
+  payload: {page: -1, size: 10}
+
+- case_id: MIS_AUTHL_06
+  desc: 超大页码
+  method: 边界值
+  check: contract
+  payload: {page: 9999, size: 10}
+
+- case_id: MIS_AUTHL_07
+  desc: size=0
+  method: 边界值
+  check: robust
+  payload: {page: 1, size: 0}
+
+- case_id: MIS_AUTHL_08
+  desc: 缺分页字段
+  method: 判定表
+  check: robust
+  payload: {}
+
+- case_id: MIS_AUTHL_09
+  desc: status=0 待审核
+  method: 等价类-有效
+  check: contract
+  payload: {page: 1, size: 10, status: 0}
+
+- case_id: MIS_AUTHL_10
+  desc: status=1 已通过
+  method: 等价类-有效
+  check: contract
+  payload: {page: 1, size: 10, status: 1}
+
+- case_id: MIS_AUTHL_11
+  desc: status=2 已驳回
+  method: 等价类-有效
+  check: contract
+  payload: {page: 1, size: 10, status: 2}
+
+- case_id: MIS_AUTHL_12
+  desc: 非法状态 status=999
+  method: 等价类-无效
+  check: robust
+  payload: {page: 1, size: 10, status: 999}

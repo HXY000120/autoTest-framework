@@ -1,0 +1,50 @@
+# 虚拟接口(Mock Server) - 发布文章 判定表 + 边界值用例
+# 真实环境的 news/submit 返回 code=900001「系统维护中」，这里用本地虚拟服务
+# 把发布链路真正跑通；PO 代码不变，只把 base_url 指向 Mock Server。
+- case_id: MOCK_PUB_01
+  desc: 标题与正文均合法
+  method: 判定表
+  title: 自动化测试虚拟文章
+  content: 这是一篇用于验证发布链路的正文内容
+  expect_code: 0
+  expect_delta: 1
+
+- case_id: MOCK_PUB_02
+  desc: 标题长度下界-1（3 字符）
+  method: 边界值
+  title: abc
+  content: 正文内容
+  expect_code: 1001
+  expect_delta: 0
+
+- case_id: MOCK_PUB_03
+  desc: 标题为空
+  method: 边界值
+  title: ""
+  content: 正文内容
+  expect_code: 1001
+  expect_delta: 0
+
+- case_id: MOCK_PUB_04
+  desc: 正文为空
+  method: 判定表
+  title: 合法的标题内容
+  content: ""
+  expect_code: 1002
+  expect_delta: 0
+
+- case_id: MOCK_PUB_05
+  desc: 标题与正文均为空
+  method: 判定表
+  title: ""
+  content: ""
+  expect_code: 1001
+  expect_delta: 0
+
+- case_id: MOCK_PUB_06
+  desc: 标题超长（200 字符）
+  method: 边界值
+  title: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  content: 正文内容
+  expect_code: 0
+  expect_delta: 1

@@ -1,0 +1,13 @@
+# mp 自媒体端 - 接口搜索用例数据
+#
+# 关键：后端过滤字段是 keyword（title/name/search 实测均被忽略）。
+# 下列关键词取自测试环境真实存在的文章标题，保证断言有效。
+- keyword: "华山"
+  expect_min: 1
+  expect_contain: true
+- keyword: "新年"
+  expect_min: 1
+  expect_contain: true
+- keyword: "不存在的关键词xyzabc"
+  expect_min: 0
+  expect_contain: false

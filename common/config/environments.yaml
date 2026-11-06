@@ -1,0 +1,106 @@
+# 多环境配置：按「业务端」隔离，每个端有自己的域名与网关前缀。
+#
+# 结构说明：
+#   endpoints.<端名>.base_url    —— 该端域名（不含路径）
+#   endpoints.<端名>.api_prefix  —— 网关前缀，请求时自动拼在接口路径前
+#   credentials.<端名>           —— 登录账号；password_pattern 中的 {date}
+#                                   会在运行时替换为当天日期（YYYYMMDD）
+default: test
+
+environments:
+  dev:
+    endpoints:
+      mp:
+        base_url: https://heima-wemedia-java.itheima.net
+        api_prefix: /wemedia/MEDIA
+      mis:
+        base_url: https://heima-admin-java.itheima.net
+        api_prefix: /service_6001
+      app:
+        base_url: ""
+        api_prefix: ""
+        # APP 端接口路径占位；接入真实服务后同时填 base_url 与 login_path
+        login_path: /app/v1_0/authorizations
+    credentials:
+      mp:
+        username: demo
+        password_pattern: "842itheima.CN032@.{date}"
+      mis:
+        username: demo
+        password_pattern: "623itheima.CN032@.{date}"
+    headers:
+      Content-Type: application/json
+    appium_server: http://127.0.0.1:4723/wd/hub
+    app_caps:
+      platformName: Android
+      platformVersion: "12"
+      deviceName: mumu
+      appPackage: com.netease.newsreader.activity
+      appActivity: .activity.MainActivity
+      automationName: UiAutomator2
+
+  test:
+    # 黑马头条（heima-leadnews Java 版）教学环境
+    # 注意：密码每天变化，格式为 前缀 + 当天日期（如 20261101）
+    endpoints:
+      mp:
+        base_url: https://heima-wemedia-java.itheima.net
+        api_prefix: /wemedia/MEDIA
+      mis:
+        base_url: https://heima-admin-java.itheima.net
+        api_prefix: /service_6001
+      app:
+        # App 端暂用网易新闻（第三方 App）替代，无自有接口域名
+        base_url: ""
+        api_prefix: ""
+        # APP 端接口路径占位；接入真实服务后同时填 base_url 与 login_path
+        login_path: /app/v1_0/authorizations
+    credentials:
+      mp:
+        username: demo
+        password_pattern: "842itheima.CN032@.{date}"
+      mis:
+        username: demo
+        password_pattern: "623itheima.CN032@.{date}"
+    headers:
+      Content-Type: application/json
+    appium_server: http://127.0.0.1:4723/wd/hub
+    app_caps:
+      platformName: Android
+      platformVersion: "12"
+      deviceName: mumu
+      # 网易新闻（被测 App，包名需真机确认）
+      appPackage: com.netease.newsreader.activity
+      appActivity: .activity.MainActivity
+      automationName: UiAutomator2
+
+  prod:
+    endpoints:
+      mp:
+        base_url: https://heima-wemedia-java.itheima.net
+        api_prefix: /wemedia/MEDIA
+      mis:
+        base_url: https://heima-admin-java.itheima.net
+        api_prefix: /service_6001
+      app:
+        base_url: ""
+        api_prefix: ""
+        # APP 端接口路径占位；接入真实服务后同时填 base_url 与 login_path
+        login_path: /app/v1_0/authorizations
+    credentials:
+      mp:
+        username: demo
+        password_pattern: "842itheima.CN032@.{date}"
+      mis:
+        username: demo
+        password_pattern: "623itheima.CN032@.{date}"
+    headers:
+      Content-Type: application/json
+    appium_server: http://127.0.0.1:4723/wd/hub
+    app_caps:
+      platformName: Android
+      platformVersion: "12"
+      deviceName: mumu
+      appPackage: com.netease.newsreader.activity
+      appActivity: .activity.MainActivity
+      automationName: UiAutomator2

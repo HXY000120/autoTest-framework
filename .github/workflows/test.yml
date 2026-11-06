@@ -1,0 +1,40 @@
+name: autoTest CI
+
+# 云端 SaaS CI 只跑接口层：Web 需要浏览器驱动，App 需要真机/模拟器，
+# 这两类放在自建 Jenkins Runner 上跑（见根目录 Jenkinsfile）。
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 清理上轮 Allure 原始结果
+        run: python -m common.report.report clean
+
+      - name: 接口自动化（默认离线模式，不依赖外部环境）
+        run: pytest -m api --alluredir=reports/raw
+
+      - name: 上传 Allure 原始结果
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: reports/raw
+          if-no-files-found: warn
+
+      # HTML 报告由 Jenkins Allure 插件生成；这里不装 allure CLI，
+      # 避免为一个报告步骤拖慢每次 push。

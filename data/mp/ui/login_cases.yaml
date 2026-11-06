@@ -1,0 +1,8 @@
+# mp 自媒体端 - Web UI 登录用例数据
+#
+# 该环境密码每天变化，use_config_password=true 时由配置按当天日期动态生成。
+# expect_nickname 取自真实登录后页面右上角 .user-name 的显示值，
+# 实测为账号名 demo（接口返回的 user.nickname 是「管理」，与页面展示不一致）。
+- username: "demo"
+  use_config_password: true
+  expect_nickname: "demo"

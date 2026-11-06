@@ -1,0 +1,7 @@
+# mis 后台审核端 - Web UI 审核用例数据
+- article_id: 1
+  action: approve
+  expect_status: approved
+- article_id: 2
+  action: reject
+  expect_status: rejected

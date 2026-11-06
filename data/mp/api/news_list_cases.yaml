@@ -1,0 +1,118 @@
+# mp 文章列表 - 分页 / 状态 / 关键词 参数用例（边界值 + 等价类）
+# check 字段决定用例走哪类断言：
+#   paging   -> 断言返回条数 <= size（分页生效）
+#   contract -> 断言业务成功 + data 为列表 + 字段契约
+#   robust   -> 只断言不 5xx、返回合法 JSON（异常参数不应打垮服务）
+- case_id: MP_LIST_P01
+  desc: 正常分页 page=1 size=10
+  method: 等价类-有效
+  check: paging
+  payload: {page: 1, size: 10}
+  size: 10
+
+- case_id: MP_LIST_P02
+  desc: 最小有效页 size=1
+  method: 边界值
+  check: paging
+  payload: {page: 1, size: 1}
+  size: 1
+
+- case_id: MP_LIST_P03
+  desc: 大分页 size=50
+  method: 边界值
+  check: paging
+  payload: {page: 1, size: 50}
+  size: 50
+
+- case_id: MP_LIST_P04
+  desc: 页码下界 page=0
+  method: 边界值
+  check: robust
+  payload: {page: 0, size: 10}
+
+- case_id: MP_LIST_P05
+  desc: 负页码 page=-1
+  method: 边界值-非法
+  check: robust
+  payload: {page: -1, size: 10}
+
+- case_id: MP_LIST_P06
+  desc: 超大页码 page=9999
+  method: 边界值
+  check: contract
+  payload: {page: 9999, size: 10}
+
+- case_id: MP_LIST_P07
+  desc: size=0 边界
+  method: 边界值
+  check: robust
+  payload: {page: 1, size: 0}
+  size: 0
+
+- case_id: MP_LIST_P08
+  desc: 负 size=-1
+  method: 边界值-非法
+  check: robust
+  payload: {page: 1, size: -1}
+
+- case_id: MP_LIST_P09
+  desc: 缺少分页字段
+  method: 判定表
+  check: robust
+  payload: {}
+
+- case_id: MP_LIST_P10
+  desc: 超大 size=500（防全表拉取）
+  method: 边界值
+  check: robust
+  payload: {page: 1, size: 500}
+
+- case_id: MP_LIST_S01
+  desc: 状态筛选 status=0 草稿
+  method: 等价类-有效
+  check: contract
+  payload: {page: 1, size: 10, status: 0}
+
+- case_id: MP_LIST_S02
+  desc: 状态筛选 status=1 待审核
+  method: 等价类-有效
+  check: contract
+  payload: {page: 1, size: 10, status: 1}
+
+- case_id: MP_LIST_S03
+  desc: 状态筛选 status=9 已发布
+  method: 等价类-有效
+  check: contract
+  payload: {page: 1, size: 10, status: 9}
+
+- case_id: MP_LIST_S04
+  desc: 非法状态 status=999
+  method: 等价类-无效
+  check: robust
+  payload: {page: 1, size: 10, status: 999}
+
+- case_id: MP_LIST_K01
+  desc: 关键词命中（实测环境含「华山」）
+  method: 等价类-有效
+  check: keyword_hit
+  payload: {page: 1, size: 10, keyword: 华山}
+  keyword: 华山
+
+- case_id: MP_LIST_K02
+  desc: 关键词无命中
+  method: 等价类-有效
+  check: keyword_miss
+  payload: {page: 1, size: 10, keyword: zzzz不存在的词zzzz}
+  keyword: zzzz不存在的词zzzz
+
+- case_id: MP_LIST_K03
+  desc: 关键词超长 300 字符
+  method: 边界值
+  check: robust
+  payload: {page: 1, size: 10, keyword: "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"}
+
+- case_id: MP_LIST_K04
+  desc: 关键词含特殊字符
+  method: 安全性
+  check: robust
+  payload: {page: 1, size: 10, keyword: "%' OR 1=1 --"}

@@ -1,0 +1,5 @@
+# mp 自媒体端 - Web UI 搜索「无结果」用例数据
+# 正向用例改为从页面首行取真实标题（见 test_search_ui.py），
+# 故此处只保留「搜不到」的场景数据。
+- keyword: "不存在的关键词zzzxyz"
+  expect_results: false

@@ -1,0 +1,12 @@
+# mis 后台审核端 - 接口审核用例数据
+#
+# 为避免污染教学环境，审核用例只使用「不存在的 id」验证接口的存在性校验，
+# 不操作真实待审核数据。expect_code=1002 即「数据不存在」。
+- action: "pass"
+  article_id: 99999999
+  expect_code: 1002
+  desc: "审核通过一篇不存在的文章"
+- action: "fail"
+  article_id: 99999999
+  expect_code: 1002
+  desc: "审核驳回一篇不存在的文章"
