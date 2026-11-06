@@ -1,20 +1,28 @@
-# 多环境配置：按「业务端」隔离，每个端有自己的域名与网关前缀。
+# 今日资讯平台测试项目 - 多环境配置
+#
+# 设计原则：框架不绑定任何具体站点，仓库里不保存真实地址与账号。
+#   - 默认 base_url 为空，pytest 全部走本地虚拟接口（Mock Server），不联网
+#   - 需要联调真实被测系统时，通过环境变量注入（见 README「被测环境配置」）：
+#       MP_BASE_URL / MIS_BASE_URL / APP_BASE_URL
+#       MP_API_PREFIX / MIS_API_PREFIX
+#       MP_USERNAME / MP_PASSWORD / MIS_USERNAME / MIS_PASSWORD
+#   - 环境变量也可写在 .env（已被 .gitignore 忽略）
 #
 # 结构说明：
-#   endpoints.<端名>.base_url    —— 该端域名（不含路径）
-#   endpoints.<端名>.api_prefix  —— 网关前缀，请求时自动拼在接口路径前
-#   credentials.<端名>           —— 登录账号；password_pattern 中的 {date}
-#                                   会在运行时替换为当天日期（YYYYMMDD）
+#   endpoints.<端名>.base_url      该端域名（不含路径），由环境变量注入
+#   endpoints.<端名>.api_prefix   网关前缀，请求时自动拼在接口路径前
+#   credentials.<端名>            登录账号；password_pattern 中的 {date}
+#                                 会在运行时替换为当天日期（YYYYMMDD）
 default: test
 
 environments:
   dev:
     endpoints:
       mp:
-        base_url: https://heima-wemedia-java.itheima.net
+        base_url: ""
         api_prefix: /wemedia/MEDIA
       mis:
-        base_url: https://heima-admin-java.itheima.net
+        base_url: ""
         api_prefix: /service_6001
       app:
         base_url: ""
@@ -23,84 +31,82 @@ environments:
         login_path: /app/v1_0/authorizations
     credentials:
       mp:
-        username: demo
-        password_pattern: "842itheima.CN032@.{date}"
+        username: ""
+        password_pattern: ""
       mis:
-        username: demo
-        password_pattern: "623itheima.CN032@.{date}"
+        username: ""
+        password_pattern: ""
     headers:
       Content-Type: application/json
     appium_server: http://127.0.0.1:4723/wd/hub
     app_caps:
       platformName: Android
       platformVersion: "12"
-      deviceName: mumu
-      appPackage: com.netease.newsreader.activity
+      deviceName: emulator
+      # 示例包名，接入真实被测 App 时按实际包名替换
+      appPackage: com.example.news
       appActivity: .activity.MainActivity
       automationName: UiAutomator2
 
   test:
-    # 今日资讯平台测试项目（Java 版）教学环境
-    # 注意：密码每天变化，格式为 前缀 + 当天日期（如 20261101）
+    # 默认环境：不配置任何外部地址，离线即可完整复现
     endpoints:
       mp:
-        base_url: https://heima-wemedia-java.itheima.net
+        base_url: ""
         api_prefix: /wemedia/MEDIA
       mis:
-        base_url: https://heima-admin-java.itheima.net
+        base_url: ""
         api_prefix: /service_6001
       app:
-        # App 端暂用网易新闻（第三方 App）替代，无自有接口域名
+        # APP 端被测对象为示例新闻 App，无自有接口域名
         base_url: ""
         api_prefix: ""
-        # APP 端接口路径占位；接入真实服务后同时填 base_url 与 login_path
         login_path: /app/v1_0/authorizations
     credentials:
       mp:
-        username: demo
-        password_pattern: "842itheima.CN032@.{date}"
+        username: ""
+        password_pattern: ""
       mis:
-        username: demo
-        password_pattern: "623itheima.CN032@.{date}"
+        username: ""
+        password_pattern: ""
     headers:
       Content-Type: application/json
     appium_server: http://127.0.0.1:4723/wd/hub
     app_caps:
       platformName: Android
       platformVersion: "12"
-      deviceName: mumu
-      # 网易新闻（被测 App，包名需真机确认）
-      appPackage: com.netease.newsreader.activity
+      deviceName: emulator
+      # 示例包名（需按实际被测 App 确认）
+      appPackage: com.example.news
       appActivity: .activity.MainActivity
       automationName: UiAutomator2
 
   prod:
     endpoints:
       mp:
-        base_url: https://heima-wemedia-java.itheima.net
+        base_url: ""
         api_prefix: /wemedia/MEDIA
       mis:
-        base_url: https://heima-admin-java.itheima.net
+        base_url: ""
         api_prefix: /service_6001
       app:
         base_url: ""
         api_prefix: ""
-        # APP 端接口路径占位；接入真实服务后同时填 base_url 与 login_path
         login_path: /app/v1_0/authorizations
     credentials:
       mp:
-        username: demo
-        password_pattern: "842itheima.CN032@.{date}"
+        username: ""
+        password_pattern: ""
       mis:
-        username: demo
-        password_pattern: "623itheima.CN032@.{date}"
+        username: ""
+        password_pattern: ""
     headers:
       Content-Type: application/json
     appium_server: http://127.0.0.1:4723/wd/hub
     app_caps:
       platformName: Android
       platformVersion: "12"
-      deviceName: mumu
-      appPackage: com.netease.newsreader.activity
+      deviceName: emulator
+      appPackage: com.example.news
       appActivity: .activity.MainActivity
       automationName: UiAutomator2

@@ -10,6 +10,7 @@ import os
 import pytest
 
 from common.assertion import assert_biz_code, assert_status
+from common.config.settings import get_endpoint
 from common.utils.data_reader import load_data
 
 cases = load_data("mis/api/login_cases.yaml")
@@ -19,11 +20,12 @@ RUN_REAL = os.getenv("RUN_REAL") == "1"
 @pytest.mark.api
 @pytest.mark.mis
 def test_mis_login_structure(mis_api):
-    """结构校验：接口路径与域名指向真实环境（离线可跑）。"""
+    """结构校验：接口路径固定、域名按端配置注入（离线可跑）。"""
     api = mis_api.api
+    ep = get_endpoint("mis")
     assert api.url_login == "/admin/login/in"
-    assert api.client.base_url == "https://heima-admin-java.itheima.net"
-    assert api.client.api_prefix == "/service_6001"
+    assert api.client.base_url == ep["base_url"], "base_url 未按端配置注入"
+    assert api.client.api_prefix == ep["api_prefix"]
 
 
 @pytest.mark.api

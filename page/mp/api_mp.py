@@ -1,7 +1,7 @@
 """mp 自媒体端接口对象(API Object)。只封装业务动作，不含断言。
 
 真实环境：今日资讯平台测试项目（Java 版服务端）
-    完整地址 = base_url + api_prefix = https://heima-wemedia-java.itheima.net/wemedia/MEDIA
+    完整地址 = base_url + api_prefix = <配置的域名><网关前缀>
 
 接口可用性（2026-11 实测）：
     可用     login/in        POST  登录，成功码 code=0，token 在 data.token
@@ -84,7 +84,7 @@ class ApiMp:
     def publish_article(self, title, content, channel_id=1, labels="自动化", article_type=0):
         """发布/提交文章。
 
-        注意：当前教学环境该接口维护中，返回 code=900001「当前系统正在维护」。
+        注意：当前被测环境该接口维护中，返回 code=900001「当前系统正在维护」。
         方法保留以便环境恢复后直接可用；用例层应对该码做显式处理。
         """
         if not isinstance(content, str):

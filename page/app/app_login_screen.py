@@ -1,6 +1,6 @@
 """app 用户端登录屏(App PO)。
 
-被测 App：网易新闻（包名 com.netease.newsreader.activity）。
+被测 App：示例新闻 App（包名 com.example.news）。
 
 说明：定位器使用 selenium 的 By（Appium 兼容），避免顶层 import appium，
 从而保证未安装 Appium 时不影响其他端用例的收集。
@@ -13,7 +13,7 @@ from selenium.webdriver.common.by import By
 
 from base.app_base import AppBase
 
-PKG = "com.netease.newsreader.activity"
+PKG = "com.example.news"
 
 
 class LoginScreen(AppBase):

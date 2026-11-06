@@ -33,6 +33,20 @@ def load_config(env: str = None) -> dict:
         raise KeyError(f"未找到环境配置: {env}，可选: {list(envs)}")
     cfg = dict(envs[env])
     cfg["env"] = env
+
+    # 环境变量覆盖：真实地址不落仓库，需要联调时按需注入。
+    # 未注入则 base_url 为空，默认全部走本地虚拟接口。
+    eps = dict(cfg.get("endpoints", {}))
+    for end_name in ("mp", "mis", "app"):
+        ep = dict(eps.get(end_name, {}))
+        prefix = end_name.upper()
+        if os.getenv(f"{prefix}_BASE_URL"):
+            ep["base_url"] = os.environ[f"{prefix}_BASE_URL"].rstrip("/")
+        if os.getenv(f"{prefix}_API_PREFIX"):
+            ep["api_prefix"] = os.environ[f"{prefix}_API_PREFIX"]
+        eps[end_name] = ep
+    cfg["endpoints"] = eps
+
     cfg.setdefault("endpoints", {})
     cfg.setdefault("credentials", {})
     cfg.setdefault("headers", {"Content-Type": "application/json"})
@@ -60,10 +74,13 @@ def get_endpoint(end_name: str, env: str = None) -> dict:
 
 
 def get_credentials(end_name: str, env: str = None):
-    """取该端登录账号，密码按「当天日期」动态生成。
+    """取该端登录账号，返回 (username, password)。
 
-    该教学环境的密码每天变化：password_pattern 中的 {date} 会被替换为
-    形如 20261101 的当天日期。返回 (username, password)。
+    优先级：
+        1. 环境变量 <END>_USERNAME / <END>_PASSWORD（推荐，账号不落仓库）
+        2. environments.yaml 的 username / password_pattern
+           password_pattern 支持 {date} 占位，运行时替换为当天日期（YYYYMMDD），
+           适用于密码按日轮换的被测系统。
     """
     cfg = load_config(env)
     creds = cfg.get("credentials", {}).get(end_name)
@@ -71,10 +88,12 @@ def get_credentials(end_name: str, env: str = None):
         raise KeyError(
             f"未找到端 {end_name} 的账号配置，可选: {list(cfg.get('credentials', {}))}"
         )
-    username = creds.get("username", "")
+    prefix = end_name.upper()
+    username = os.getenv(f"{prefix}_USERNAME") or creds.get("username", "")
+    if os.getenv(f"{prefix}_PASSWORD") is not None:
+        return username, os.environ[f"{prefix}_PASSWORD"]
     pattern = creds.get("password_pattern", "")
-    password = pattern.replace("{date}", datetime.now().strftime("%Y%m%d"))
-    return username, password
+    return username, pattern.replace("{date}", datetime.now().strftime("%Y%m%d"))
 
 
 def set_env(env: str):

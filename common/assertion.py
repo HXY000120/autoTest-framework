@@ -17,7 +17,7 @@ def assert_biz_code(resp, expected=(0, 200)):
     服务端 HTTP 状态码恒为 200，成败体现在响应体的 code 字段上：
         0 / 200  成功（登录类为 0，查询类为 200）
         1002     数据不存在    501   文章未发布
-        900001   系统维护中（该教学环境部分接口被禁用）
+        900001   系统维护中（该被测环境部分接口被禁用）
     返回解析后的响应体，便于用例继续取数据。
     """
     codes = expected if isinstance(expected, (tuple, list)) else (expected,)
@@ -71,7 +71,7 @@ def assert_response_json(resp, require_code: bool = True):
 def assert_rejected_or_json(resp, require_code: bool = True):
     """异常参数专用：网关/WAF 直接拒绝（401/403/405）或返回合法 JSON 均可。
 
-    教学环境部署在阿里云 WAF 之后，含 SQL 注入 / XSS 特征的参数会被
+    被测环境部署在网关 WAF 之后，含 SQL 注入 / XSS 特征的参数会被
     直接拦下并返回 405 HTML 拦截页。这属于安全测试的**预期结果**，
     不能当成用例失败；但服务端 5xx 仍然一律不允许。
     """

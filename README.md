@@ -121,35 +121,41 @@ pytest -m mock          # 34 条虚拟接口用例，不联网、CI 可稳定执
 `mock_server` fixture 在根 `conftest.py`，每个用例独立端口与状态；
 `trust_env=False` 用来绕开本机代理对 `127.0.0.1` 的劫持。
 
-## 真实环境：今日资讯平台测试项目（Java 版）
+## 被测环境配置
 
-| 端 | 地址 | 网关前缀 |
+框架**不绑定任何具体站点**：仓库与 `environments.yaml` 里不保存真实地址或账号。
+默认 `pytest` 全部走本地虚拟接口（Mock Server），**不联网即可完整复现**。
+
+需要联调真实被测系统时，通过环境变量注入（也可写进 `.env`，已被 git 忽略）：
+
+| 变量 | 用途 |
+| --- | --- |
+| `MP_BASE_URL` / `MIS_BASE_URL` / `APP_BASE_URL` | 各端域名 |
+| `MP_API_PREFIX` / `MIS_API_PREFIX` | 网关前缀，默认值见 `environments.yaml` |
+| `MP_USERNAME` / `MP_PASSWORD` / `MIS_USERNAME` / `MIS_PASSWORD` | 登录账号 |
+| `RUN_REAL=1` | 打开真实联调用例（默认关闭） |
+
+密码若按日轮换，可在 `credentials.*.password_pattern` 里配 `{date}` 占位，
+运行时自动替换为当天日期（`YYYYMMDD`），不必手改配置。
+未注入地址时，真实环境用例自动跳过，不影响离线回归。
+
+### 接口清单（API Object 已封装）
+
+| 端 | 接口 | 说明 |
 | --- | --- | --- |
-| mp 自媒体端 | https://heima-wemedia-java.itheima.net | `/wemedia/MEDIA` |
-| mis 后台审核端 | https://heima-admin-java.itheima.net | `/service_6001` |
-| app 用户端 | 暂用网易新闻（包名 `com.netease.newsreader.activity`） | — |
+| mp | `POST /wemedia/login/in` | 登录，成功 `code=0`，token 在 `data.token` |
+| mp | `POST /wemedia/api/v1/news/list` | 列表；过滤字段为 `keyword`（`title` 会被后端忽略） |
+| mp | `GET /wemedia/api/v1/news/one/{id}` | 详情 |
+| mp | `POST /wemedia/api/v1/news/submit` | 发布；维护中时返回 `code=900001`，用例显式跳过 |
+| mp | `POST /wemedia/api/v1/news/down_or_up` | 上下架 |
+| mis | `POST /admin/login/in` | 后台登录 |
+| mis | `POST /user/api/v1/auth/list` | 实名认证列表 |
+| mis | `POST /wemedia/api/v1/news/auth_pass` / `auth_fail` | 文章审核，id 不存在返回 `1002` |
 
-账号均为 `demo`，**密码每天变化**，格式为「前缀 + 当天日期」：mp 前缀 `842`、
-mis 前缀 `623`，如 `842itheima.CN032@.20261101`。框架通过
-`credentials.*.password_pattern` 在运行时动态生成，无需手改配置。
-
-### 已实测的接口能力
-
-| 端 | 接口 | 状态 |
-| --- | --- | --- |
-| mp | `POST /wemedia/login/in` | ✅ 可用 |
-| mp | `POST /wemedia/api/v1/news/list` | ✅ 可用（`keyword` 过滤生效，`title` 无效） |
-| mp | `GET /wemedia/api/v1/news/one/{id}` | ✅ 可用 |
-| mp | `POST /wemedia/api/v1/news/submit` | ⚠️ 维护中（`code=900001`） |
-| mis | `POST /admin/login/in` | ✅ 可用 |
-| mis | `POST /user/api/v1/auth/list` | ✅ 可用 |
-| mis | `POST /wemedia/api/v1/news/auth_pass` / `auth_fail` | ✅ 可用（id 不存在返回 `1002`） |
-| mis | `POST /user/api/v1/auth/authPass` | ⚠️ 维护中（`code=900001`） |
-
-### 三个环境坑（框架已内置规避）
+### 接口层适配点（框架已内置规避）
 
 1. **鉴权只认 `token` 请求头**——用 `Authorization: Bearer` 会返回 401。
-2. **WAF 拦截 `python-requests` 的 User-Agent**（返回 405），`ApiClient` 默认伪装浏览器 UA。
+2. **网关 WAF 拦截 `python-requests` 的 User-Agent**（返回 405），`ApiClient` 默认伪装浏览器 UA。
 3. **成功业务码不统一**——登录类 `code=0`，查询类 `code=200`，
    统一用 `common/assertion.py::assert_biz_code` 断言。
 
@@ -159,8 +165,12 @@ mis 前缀 `623`，如 `842itheima.CN032@.20261101`。框架通过
 
 ```bash
 pip install -r requirements-web.txt
-RUN_REAL=1 pytest -m web          # 默认 headless，浏览器默认 edge（可改 chrome）
+MP_BASE_URL=https://<your-host> MIS_BASE_URL=https://<your-host> \
+    RUN_REAL=1 pytest -m web      # 默认 headless，浏览器默认 edge（可改 chrome）
 ```
+
+> Web 用例的定位器与被测页面结构绑定，换站点需同步调整 `page/*/web_*.py`。
+> 未配置 `MP_BASE_URL` / `MIS_BASE_URL` 时该端用例**自动 skip**，不会因地址为空而报错。
 
 UI 层另有三个坑，已在 `common/driver/web_driver.py` 内置规避，缺一个都跑不起来：
 
@@ -206,16 +216,15 @@ allure open reports/html                         # ③ 浏览器打开
 
 压测脚本把 Locust 的 `HttpSession` 注入 `ApiClient.session`，因此**既复用
 `page/mp/api_mp.py` 的业务封装，又能被 Locust 统计 RPS / 响应时间 / 失败率**。
-只压读接口（列表 3 : 搜索 2 : 详情 1），不压发布接口——教学环境该接口维护中，
-且压测写操作会污染数据。
+只压读接口（列表 3 : 搜索 2 : 详情 1），不压发布接口——压测写操作会污染数据。
 
 ```bash
-# 10 并发、30 秒，无 UI
-locust -f perf/locustfile.py --headless -u 10 -r 2 -t 30s \
-    --host https://heima-wemedia-java.itheima.net
+# 10 并发、30 秒，无 UI；域名由 MP_BASE_URL 提供
+MP_BASE_URL=https://<your-host> \
+    locust -f perf/locustfile.py --headless -u 10 -r 2 -t 30s
 
 # 真机资源采集（CPU / 内存 / 流量 / 电量 4 类，输出 CSV 到 reports/perf/）
-python perf/adb_monitor.py --pkg com.netease.newsreader.activity --duration 60
+python perf/adb_monitor.py --pkg com.example.news --duration 60
 ```
 
 已实测（1 并发 / 5 秒）：登录 419ms、文章列表 103ms，**2 请求 0 失败**。

@@ -1,6 +1,6 @@
 """mp 文章详情 / 上下架 - 参数与异常用例。
 
-写操作一律使用不存在的 id，避免污染真实教学环境数据。
+写操作一律使用不存在的 id，避免污染真实被测环境数据。
 """
 import os
 
@@ -47,7 +47,7 @@ def test_mp_article_params(mp_api, case):
 @pytest.mark.api
 @pytest.mark.mp
 def test_article_case_contract():
-    """离线守卫：写操作用例不得使用真实文章 id，防止误改教学环境数据。"""
+    """离线守卫：写操作用例不得使用真实文章 id，防止误改被测环境数据。"""
     for c in cases:
         assert isinstance(c.get("article_id"), int), f"{c['case_id']} 缺少 article_id"
         if c["kind"] == "toggle_missing":

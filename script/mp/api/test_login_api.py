@@ -10,6 +10,7 @@ import os
 import pytest
 
 from common.assertion import assert_biz_code, assert_status
+from common.config.settings import get_endpoint
 from common.utils.data_reader import load_data
 
 cases = load_data("mp/api/login_cases.yaml")
@@ -19,12 +20,13 @@ RUN_REAL = os.getenv("RUN_REAL") == "1"
 @pytest.mark.api
 @pytest.mark.mp
 def test_mp_login_structure(mp_api):
-    """结构校验：接口路径与域名指向真实环境（离线可跑，能抓出 PO 改坏）。"""
+    """结构校验：接口路径固定、域名按端配置注入（离线可跑，能抓出 PO 改坏）。"""
     api = mp_api.api
+    ep = get_endpoint("mp")
     assert api.url_login == "/wemedia/login/in"
     assert api.url_news_list == "/wemedia/api/v1/news/list"
-    assert api.client.base_url == "https://heima-wemedia-java.itheima.net"
-    assert api.client.api_prefix == "/wemedia/MEDIA"
+    assert api.client.base_url == ep["base_url"], "base_url 未按端配置注入"
+    assert api.client.api_prefix == ep["api_prefix"]
 
 
 @pytest.mark.api

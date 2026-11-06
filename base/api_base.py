@@ -16,7 +16,7 @@ from common.utils.retry import retry_on_fail
 
 log = get_logger("api_client")
 
-# 该环境部署在阿里云 WAF 之后：requests 默认的 "python-requests/x.x"
+# 该环境部署在网关 WAF 之后：requests 默认的 "python-requests/x.x"
 # User-Agent 会被直接拦截并返回 405（WAF 拦截页），必须伪装成浏览器。
 DEFAULT_UA = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "

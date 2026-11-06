@@ -38,12 +38,18 @@ def test_mp_login_negative_ui(mp_web, case):
 @pytest.mark.web
 @pytest.mark.mp
 def test_login_negative_case_contract():
-    """离线守卫：异常用例必须覆盖 4 类设计方法。"""
+    """离线守卫：异常用例必须覆盖 4 类设计方法与关键边界组合。"""
     methods = {c["method"].split("-")[0] for c in cases}
     assert {"等价类", "边界值", "判定表", "安全性"} <= methods
+    assert any(c["username"] == "" for c in cases), "缺少空用户名边界用例"
+    assert any(c["password"] == "" for c in cases), "缺少空密码边界用例"
+    assert any(c["username"] == "" and c["password"] == "" for c in cases), (
+        "缺少双空组合（判定表）用例"
+    )
     _, correct_password = get_credentials("mp")
     for c in cases:
         assert isinstance(c["username"], str) and isinstance(c["password"], str)
-        assert c["password"] != correct_password, (
-            f"{c['case_id']} 误用了正确密码，异常用例会自相矛盾"
-        )
+        if correct_password:  # 未注入真实账号时无从比对，跳过这项校验
+            assert c["password"] != correct_password, (
+                f"{c['case_id']} 误用了正确密码，异常用例会自相矛盾"
+            )

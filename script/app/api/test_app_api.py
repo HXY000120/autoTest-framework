@@ -1,6 +1,6 @@
 """app 用户端接口对象 - 契约与参数单测（离线可跑，不依赖真实服务）。
 
-说明：本教学环境的 APP 端用网易新闻做 UI 自动化，没有配套的自有接口服务。
+说明：本被测环境的 APP 端用示例新闻 App做 UI 自动化，没有配套的自有接口服务。
 因此这里用 FakeClient 验证「接口对象是否正确组装请求」，而不是伪造
 已联调的假数据。配好 endpoints.app.base_url 后，最后一条用例自动转为真实联调。
 """
@@ -107,7 +107,7 @@ def test_app_real_login_gated(app_api):
     ep = get_endpoint("app")
     if not ep["base_url"]:
         pytest.skip(
-            "当前环境未部署 APP 端接口服务（UI 用网易新闻替代）；"
+            "当前环境未部署 APP 端接口服务（UI 用示例新闻 App替代）；"
             "配置 endpoints.app.base_url 后本用例自动转为真实联调"
         )
     resp = app_api.api.login("13800138000", "246810")

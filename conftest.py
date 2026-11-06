@@ -32,6 +32,33 @@ def pytest_ignore_collect(collection_path, config):
     return False
 
 
+def pytest_collection_modifyitems(config, items):
+    """联调开关打开但地址未注入时跳过真实接口用例，避免一堆连接错误。
+
+    默认（不设 RUN_REAL）不受影响，离线回归始终稳定。
+    """
+    if os.getenv("RUN_REAL") != "1":
+        return
+    from common.config.settings import get_endpoint
+
+    ready = {end: bool(get_endpoint(end)["base_url"]) for end in ENDS}
+    if all(ready.values()):
+        return
+    skip = pytest.mark.skip(
+        reason="RUN_REAL=1 但未配置对应端 BASE_URL，见 README「被测环境配置」"
+    )
+    for item in items:
+        path = str(getattr(item, "path", None) or item.fspath).replace("\\", "/")
+        if "/script/" not in path or "/api/" not in path:
+            continue
+        if item.get_closest_marker("mock"):
+            continue
+        for end in ENDS:
+            if f"/script/{end}/" in path and not ready[end]:
+                item.add_marker(skip)
+                break
+
+
 @pytest.fixture
 def api_client():
     yield ApiClient()
@@ -41,7 +68,7 @@ def api_client():
 def mock_server():
     """虚拟接口服务：每个用例独立端口与状态，互不污染。
 
-    用于补齐教学环境缺失/维护中的接口（发布、审核动作、APP 端服务），
+    用于补齐被测环境缺失/维护中的接口（发布、审核动作、APP 端服务），
     详见 common/mock/mock_server.py。
     """
     from common.mock.mock_server import start_server
