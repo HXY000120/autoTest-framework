@@ -1,6 +1,6 @@
 """mp 自媒体端内容管理/搜索页(Web PO)。只封装操作，不含断言。
 
-定位器取自真实页面：
+定位器按常见列表页结构编写，接入实际系统时按 DOM 复核：
     搜索框 input[placeholder='请输入关键字']
     结果行 .el-table__body-wrapper tbody tr
 
@@ -54,8 +54,8 @@ class SearchPage(WebBase):
     def first_title(self) -> str:
         """取首行标题（行文本形如「序号\\n标题\\n阅读\\n...」）。
 
-        用页面真实标题做搜索关键词，比硬编码关键词更稳——
-        该页是「内容分析」视图，数据未必包含接口侧的文章。
+        用列表首行标题做搜索关键词，比硬编码关键词更稳——
+        列表页数据与接口侧文章列表未必一致。
         """
         rows = self.find_all(self._results)
         if not rows:

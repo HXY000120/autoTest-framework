@@ -21,8 +21,10 @@ autoTest/
 │   ├── mp/  mis/  app/
 │   └── 每个端下分 api/ 与 ui/（各带独立 conftest）
 ├── common/      # ⑤ 基础设施：config / logger / report / utils / driver
-├── perf/        # ⑥ 性能测试（Locust），复用 page/*/api_*.py
-├── conftest.py  # ⑧ sys.path + TEST_TARGET 收集隔离 + 底层 fixture
+│   └── mock/    #    本地虚拟接口服务（标准库 HTTP Server，零依赖）
+├── perf/        # ⑥ 性能测试（Locust + adb 资源采集），复用 page/*/api_*.py
+├── Jenkinsfile  # ⑦ CI/CD 流水线（接口 / Web / App 三阶段 + Allure）
+├── conftest.py  # ⑧ sys.path + TEST_TARGET 隔离 + mock fixture + 联调降级
 ├── pytest.ini   # ⑨ markers / testpaths / pythonpath
 └── requirements*.txt  # 按端拆分依赖
 ```
@@ -38,10 +40,12 @@ autoTest/
 - **双维度执行隔离**：
   - 技术维度：`pytest -m api` / `-m web` / `-m app`
   - 业务维度：`TEST_TARGET=mp|mis|app pytest`（收集阶段忽略其它端）
-  - 组合示例：`TEST_TARGET=mp pytest -m web`（只跑 mp 的 Web UI）
+  - 组合示例：`TEST_TARGET=mp pytest -m api`（只跑 mp 端接口，默认即可执行）
 - **数据驱动**：YAML 用例经 `common/utils/data_reader.load_data` 读取，
   配合 `@pytest.mark.parametrize`；数字型字段（手机号/验证码）**务必加引号**。
-- **配置外置**：`.env`（`TEST_ENV`）+ `common/config/environments.yaml`（多环境）。
+- **配置外置**：`common/config/environments.yaml`（多环境结构，不含任何真实地址）
+  + `.env` / 环境变量（`TEST_ENV`、`MP_BASE_URL`、`MP_PASSWORD` 等）按环境注入，
+  账号与域名不落仓库。
 - **断言封装**：`common/assertion.py` 统一收口业务码、字段契约、分页边界、
   鲁棒性（WAF 拒绝也算预期）四类断言，失败信息格式一致。
 - **异常捕获与日志**：`ApiClient` 统一捕获 `requests.RequestException`，
@@ -57,17 +61,18 @@ pip install -r requirements-web.txt      # + Web（Selenium）
 pip install -r requirements-app.txt      # + App（Appium）
 pip install -r requirements-perf.txt     # + 性能（Locust）
 
-# 2. 跑用例
-pytest                          # 全部（无浏览器/Appium 时 UI 用例自动 skip）
-pytest -m api                   # 只跑接口
-pytest -m web                   # 只跑 Web UI
-pytest -m app                   # 只跑 App 端（含无需真机的滑动组件单测）
+# 2. 跑用例（默认不联网，需外部环境的用例自动 skip）
+pytest                          # 全部
+pytest -m api                   # 接口层（含 34 条虚拟接口用例）
+pytest -m mock                  # 只跑虚拟接口用例，完全不联网
+pytest -m web                   # Web UI（需先注入 MP_BASE_URL / MIS_BASE_URL）
+pytest -m app                   # App 端（含无需真机的滑动组件单测）
 pytest -m app_end               # 只按业务端筛 app 用例
-pytest -m mock                  # 只跑虚拟接口用例（不联网）
-TEST_TARGET=mp pytest -m web     # 只跑 mp 端的 Web UI
+TEST_TARGET=mp pytest -m api     # 只跑 mp 端接口
 
-# 3. 真实联调（默认只跑结构/数据校验用例，不依赖外部服务）
-RUN_REAL=1 pytest -m api
+# 3. 真实联调（须先注入被测系统地址与账号，见「被测环境配置」）
+MP_BASE_URL=https://<your-host> MP_USERNAME=<账号> MP_PASSWORD=<密码> \
+    RUN_REAL=1 pytest -m api
 
 # 4. 报告
 python -m common.report.report clean          # 跑测试前清旧结果
@@ -75,14 +80,16 @@ pytest -m api --alluredir=reports/raw
 python -m common.report.report generate      # 需本机 allure CLI
 ```
 
-> 未安装 selenium / appium 时，对应 UI 用例会因 fixture 内延迟导入而 **自动 skip**，
-> 不影响接口用例的收集与执行。
+> 三类情况会自动 skip，都不会让构建变红：未装 selenium / appium、
+> 未配置被测系统地址、以及打开 `RUN_REAL` 却没注入地址。
+> 虚拟接口用例与离线契约用例始终执行。
 
 ## 用例规模与覆盖
 
 | 维度 | 数量 | 说明 |
 | --- | --- | --- |
 | 收集用例 | 179 | `pytest --collect-only` 展开参数化后的实际条目 |
+| 默认离线 | 不联网即可跑 | 虚拟接口、App 组件单测、数据契约守卫真实执行；需外部系统的用例自动 skip |
 | 真实接口 | mp / mis | 登录异常、列表分页与状态、详情/上下架、鉴权、审核参数 |
 | 虚拟接口 | 34 条 | 发布判定表、审核状态流转、APP 登录与文章流、**跨端完整业务闭环** |
 | Web UI | mp + mis | 登录正/反向、发布表单校验判定表、审核列表、搜索反向 |
@@ -92,15 +99,14 @@ python -m common.report.report generate      # 需本机 allure CLI
 用例数据全部在 `data/`，与 `script/` 路径严格对齐；多条离线「契约守卫」用例
 会在 YAML 被误删或字段写错时失败，防止用例悄悄缩水。
 
-**刻意跳过、不硬凑通过的部分**（仅限真实环境）：发布接口
-（环境 `code=900001` 维护中）、mp 搜索正向用例（页面是「内容分析」视图，
-数据与接口侧不同）、APP 端真实接口（未部署自有 APP 服务）。
-三者均在用例里写明原因；这些链路已由虚拟接口用例完整覆盖，见下一节。
+**刻意跳过、不硬凑通过的部分**：依赖具体被测系统的用例（发布链路、
+搜索正向、APP 端真实接口）在默认离线模式下自动 skip，每条都写明原因；
+这些链路已由虚拟接口用例完整覆盖，见下一节。
 
 ## 虚拟接口（Mock Server）
 
-真实环境缺失 / 维护中的接口，用 `common/mock/mock_server.py` 起一个本地
-HTTP 服务补齐。它不是 `unittest.mock` 打桩，而是**真实 HTTP 往返**：URL 拼接、
+被测系统中缺失 / 维护中的接口、以及尚未部署的 APP 端服务，用
+`common/mock/mock_server.py` 起一个本地 HTTP 服务补齐。它不是 `unittest.mock` 打桩，而是**真实 HTTP 往返**：URL 拼接、
 headers、token 注入、JSON 解析全部照常走，用例只把 `ApiClient.base_url`
 指向它，**PO 层与用例代码零改动**。
 
@@ -124,7 +130,8 @@ pytest -m mock          # 34 条虚拟接口用例，不联网、CI 可稳定执
 ## 被测环境配置
 
 框架**不绑定任何具体站点**：仓库与 `environments.yaml` 里不保存真实地址或账号。
-默认 `pytest` 全部走本地虚拟接口（Mock Server），**不联网即可完整复现**。
+默认 `pytest` 不联网——虚拟接口用例执行完整 HTTP 往返，依赖外部系统的用例
+自动跳过，因此 clone 后**无需任何配置即可稳定回归**。
 
 需要联调真实被测系统时，通过环境变量注入（也可写进 `.env`，已被 git 忽略）：
 
@@ -181,18 +188,18 @@ UI 层另有三个坑，已在 `common/driver/web_driver.py` 内置规避，缺�
    `send_keys` 会报 `ElementNotInteractable`。
 3. **必须伪装 UA**——headless 默认 UA 会被 WAF 拦截返回 405。
 
-页面定位器均已按真实页面校正（Element UI），此前凭惯例写的都是错的：
+页面定位器按常见 Element UI 结构编写，**接入实际被测系统时需按 DOM 复核**。
+下表是调试中记录的几类易错写法：
 
-| 元素 | 错误写法 | 真实写法 |
+| 元素 | 易错写法 | 推荐写法 |
 | --- | --- | --- |
-| 登录按钮 | `contains(text(),'登录')` | 文案是「登 录」（含空格），用 `normalize-space` + 单字「登」 |
-| 账号/密码框 | `[placeholder='请输入手机号']` | `input[type='text']` / `input[type='password']` |
-| 用户名 | `.nickname` | `.user-name`（显示的是账号名 `demo`） |
-| 搜索框 | `[placeholder='搜索']` | `input[placeholder='请输入关键字']`，且**无搜索按钮，需回车触发** |
+| 登录按钮 | `contains(text(),'登录')` | 文案含空格时用 `normalize-space` + 单字匹配 |
+| 账号/密码框 | 依赖具体 placeholder 文案 | 优先按 `input[type='text']` / `input[type='password']` 定位 |
+| 用户名 | 猜测 `.nickname` 之类的类名 | 以实际 DOM 为准，登录后取文本断言 |
+| 搜索框 | 假设一定存在搜索按钮 | 无按钮时用 `Keys.ENTER` 触发查询 |
 
-> 注意：mp 的 `#/news/index` 是「内容分析」视图，其数据与接口侧 `news/list`
-> 不同，且按标题搜索始终返回 0 条（疑与状态筛选联动），
-> 对应正向用例已 skip 并注明原因，未强行凑通过。
+> 搜索正向用例依赖具体页面的检索规则，未与被测页面核对前保持 skip，
+> 并在用例里注明原因，未强行改断言凑通过。
 
 ## 日志 / 报告 / 失败截图
 
@@ -204,7 +211,7 @@ UI 层另有三个坑，已在 `common/driver/web_driver.py` 内置规避，缺�
 | 失败截图 | `reports/screenshots/` | 用例失败自动截图，文件名即用例 nodeid |
 
 ```bash
-pytest -m web --alluredir=reports/raw            # ① 产出原始结果（含失败截图附件）
+pytest -m api --alluredir=reports/raw            # ① 产出原始结果
 allure generate reports/raw -o reports/html --clean  # ② 聚合为 HTML
 allure open reports/html                         # ③ 浏览器打开
 ```
@@ -227,7 +234,8 @@ MP_BASE_URL=https://<your-host> \
 python perf/adb_monitor.py --pkg com.example.news --duration 60
 ```
 
-已实测（1 并发 / 5 秒）：登录 419ms、文章列表 103ms，**2 请求 0 失败**。
+示例验证（1 并发 / 5 秒）：登录 419ms、文章列表 103ms，**2 请求 0 失败**。
+配置 `MP_BASE_URL` 后可自行复现；未注入地址时请勿启动压测。
 
 ## CI/CD（Jenkins）
 
@@ -238,7 +246,7 @@ python perf/adb_monitor.py --pkg com.example.news --duration 60
 | --- | --- | --- |
 | 准备环境 | 建 venv、装依赖、清理上轮 Allure 结果 | — |
 | 接口自动化 | `pytest -m api --alluredir=reports/raw` | `RUN_REAL` 控制是否联调真实环境 |
-| Web 自动化 | 装 `requirements-web.txt` 后 `pytest -m web` | `RUN_WEB` |
+| Web 自动化 | 装 `requirements-web.txt` 后 `pytest -m web` | `RUN_WEB`（需在 Jenkins 凭据注入 `MP_BASE_URL` / `MIS_BASE_URL`，否则自动 skip） |
 | App 自动化 | `pytest -m app`（含无需真机的滑动组件单测） | `RUN_APP` |
 
 `common/report/report.py` 的 `clean` / `generate` 通过

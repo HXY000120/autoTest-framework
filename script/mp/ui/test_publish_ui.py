@@ -14,10 +14,10 @@ cases = load_data("mp/ui/publish_cases.yaml")
 
 def _login_and_open_editor(mp_web):
     base = get_endpoint("mp")["base_url"]
-    _, password = get_credentials("mp")
+    name, password = get_credentials("mp")
     login = mp_web.login_page
     login.open(f"{base}/#/login")
-    login.login("demo", password)
+    login.login(name, password)
     login.wait_for_login()
 
     editor = mp_web.editor_page

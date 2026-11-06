@@ -3,7 +3,7 @@
 真实环境：今日资讯平台测试项目（Java 版服务端）
     完整地址 = base_url + api_prefix = <配置的域名><网关前缀>
 
-接口可用性（2026-11 实测）：
+接口能力说明：
     可用     admin/login/in              POST  登录，code=0，token 在 data.token
     可用     user/api/v1/auth/list       POST  用户实名认证列表，code=200（有数据）
     可用     user/api/v1/auth/authFail   POST  认证驳回，code=0

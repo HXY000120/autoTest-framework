@@ -18,11 +18,11 @@ ACTION_TEXT = {"approve": "通过", "reject": "驳回"}
 @pytest.mark.parametrize("case", cases)
 def test_mis_audit_ui(mis_web, case):
     base = get_endpoint("mis")["base_url"]
-    _, pwd = get_credentials("mis")
+    name, pwd = get_credentials("mis")
 
     login = mis_web.login_page
     login.open(f"{base}/#/login")
-    login.login("demo", pwd)
+    login.login(name, pwd)
     login.wait_for_login()
 
     page = mis_web.audit_page

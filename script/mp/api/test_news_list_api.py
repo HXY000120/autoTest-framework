@@ -62,7 +62,7 @@ def test_keyword_roundtrip(mp_api):
     assert keyword, f"首条文章没有标题: {full[0]}"
 
     hit = assert_list_data(mp_api.api.search_articles(keyword))
-    assert hit, f"用真实标题片段「{keyword}」搜索却无结果"
+    assert hit, f"用列表标题片段「{keyword}」搜索却无结果"
     assert any(keyword in (i.get("title") or "") for i in hit), (
         f"搜索「{keyword}」返回的结果标题均不含该片段"
     )

@@ -1,6 +1,6 @@
 """mp 自媒体端登录页(Web PO)。只封装操作，不含断言。
 
-定位器均取自真实页面（Element UI），非推测值：
+定位器按常见 Element UI 登录表单结构编写，接入实际系统时按 DOM 复核：
     input[type=text]      账号
     input[type=password]  密码
     登录按钮              <button><span>登 录</span></button>

@@ -2,9 +2,8 @@
 
 搜索依赖登录态：未登录会被重定向到登录页，内容管理页的搜索框根本不存在。
 
-注意：该页是「内容分析」视图，其数据未必包含接口侧 news/list 的文章
-（接口返回的是草稿/待审核，页面默认展示已发布的分析数据），
-因此正向用例从页面首行取真实标题作为关键词，避免硬编码关键词搜不到。
+注意：列表页的检索规则与接口侧未必一致，
+因此正向用例从列表首行动态取标题作为关键词，避免硬编码关键词搜不到。
 """
 import pytest
 
@@ -16,10 +15,10 @@ cases = load_data("mp/ui/search_cases.yaml")
 
 def _login(mp_web):
     base = get_endpoint("mp")["base_url"]
-    _, pwd = get_credentials("mp")
+    name, pwd = get_credentials("mp")
     login = mp_web.login_page
     login.open(f"{base}/#/login")
-    login.login("demo", pwd)
+    login.login(name, pwd)
     login.wait_for_login()
     return base
 
@@ -27,12 +26,11 @@ def _login(mp_web):
 @pytest.mark.web
 @pytest.mark.mp
 @pytest.mark.skip(
-    reason="该页为「内容分析」视图：实测用页面真实标题（如「项目管理感悟」）搜索"
-           "仍返回 0 条，疑搜索与状态筛选联动或有独立检索字段，"
-           "需与业务确认搜索规则后再启用本用例"
+    reason="搜索正向用例依赖具体页面的检索规则，未与被测页面核对前保持 skip，"
+           "确认规则后启用本用例即可"
 )
 def test_mp_search_existing(mp_web):
-    """用页面真实存在的标题搜索，应能搜到（验证搜索功能真的生效）。"""
+    """用列表首行标题搜索，应能命中（验证搜索功能真的生效）。"""
     base = _login(mp_web)
     sp = mp_web.search_page
     sp.open(f"{base}/#/news/index")

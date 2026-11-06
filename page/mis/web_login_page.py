@@ -1,6 +1,6 @@
 """mis 后台审核端登录页(Web PO)。
 
-定位器取自真实页面（结构与 mp 端一致，同为 Element UI）：
+定位器按常见 Element UI 登录表单结构编写（与 mp 端一致）：
     账号 input[type=text]、密码 input[type=password]
     按钮文案「登 录」（含空格），用 normalize-space 匹配
 """
