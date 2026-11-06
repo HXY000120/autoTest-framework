@@ -88,7 +88,7 @@ python -m common.report.report generate      # 需本机 allure CLI
 
 | 维度 | 数量 | 说明 |
 | --- | --- | --- |
-| 收集用例 | 179 | `pytest --collect-only` 展开参数化后的实际条目 |
+| 收集用例 | 184 | `pytest --collect-only` 展开参数化后的实际条目 |
 | 默认离线 | 不联网即可跑 | 虚拟接口、App 组件单测、数据契约守卫真实执行；需外部系统的用例自动 skip |
 | 真实接口 | mp / mis | 登录异常、列表分页与状态、详情/上下架、鉴权、审核参数 |
 | 虚拟接口 | 34 条 | 发布判定表、审核状态流转、APP 登录与文章流、**跨端完整业务闭环** |
@@ -200,6 +200,26 @@ UI 层另有三个坑，已在 `common/driver/web_driver.py` 内置规避，缺�
 
 > 搜索正向用例依赖具体页面的检索规则，未与被测页面核对前保持 skip，
 > 并在用例里注明原因，未强行改断言凑通过。
+
+## 页面元素变动的应对
+
+UI 自动化最怕页面改版。框架按 5 层把影响面收敛到最小：
+
+| 层 | 做法 | 仓库位置 |
+| --- | --- | --- |
+| 收敛改动面 | 定位器只写在 PO 类属性里，**用例层零定位器**；改版只改一个 PO 文件 | `page/*/web_*.py`、`page/app/app_*_screen.py` |
+| 抗变定位策略 | 优先语义化 CSS / 相对 XPath（`normalize-space`、type 属性），不用绝对 XPath 与索引 | 上表「易错写法」 |
+| 运行时稳定性 | `WebDriverWait` 显式等待，避免 DOM 异步导致的 stale element；表格另有 `wait_rows()` 兜底 | `base/web_base.py`、`page/mp/web_search_page.py` |
+| 失效快速定位 | 失败自动截图 + 日志记录当时查找的定位器 + Allure 附件 | `conftest.py`、`common/logger/` |
+| 主动守护 | 静态扫描全部 PO 定位器：非法 by / 空值 / 绝对 XPath / 同文件重复，构建直接失败 | `script/mp/ui/test_locator_health.py` |
+
+守护用例用 AST 解析源码，**不 import selenium、不启动浏览器**，CI 只装基础依赖也能跑；
+当前覆盖 **10 个 PO 文件、33 个定位器**。页面改版改完 PO 后跑 `pytest -m web`，
+定位器写错会立刻暴露，不必等浏览器或真机。
+
+> **取舍说明**：进阶做法是把定位器外置成 YAML、按版本切换，改版只换配置文件。
+> 本框架未采用——它适合页面频繁改版、多环境并存的团队；当前项目规模下集中放在
+> PO 里已足够，外置反而多一层间接性。面试时可主动讲这个取舍。
 
 ## 日志 / 报告 / 失败截图
 
