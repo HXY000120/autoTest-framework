@@ -29,6 +29,7 @@
 | 内容空；标题×内容必填组合 | 判定表 | ✅ | 同上 |
 | payload 字段齐全、token 注入、服务端确实新增一条 | 契约 / 状态 | ✅ | 同上（`state.articles` 断言） |
 | 表单必填校验提示（5 类） | 判定表 | ⚠️ | `script/mp/ui/test_publish_ui.py`（需注入地址） |
+| 编辑器频道选择 / 存草稿 / 标签填写 | 场景法 | ⚠️ | `script/mp/ui/test_editor_ext_ui.py`（需注入地址；离线契约守卫已跑） |
 | 发布 → 审核 → APP 可见的业务闭环 | 场景法 | ✅ | `script/mp/api/test_article_flow_mock_api.py` |
 | 真实发布接口 `code=900001` 维护中 | 异常分支 | ⚠️ | `script/mp/api/test_publish_api.py` skip 并注明原因 |
 
@@ -40,7 +41,8 @@
 | 不存在 id / 缺 id / 字符串 id / id=0 | 边界值 / 等价类 | ✅ | `script/mis/api/test_audit_param_api.py` |
 | 状态迁移 `待审核1 → 通过4 / 驳回2 → 已发布9`、审核日志 | 状态迁移 | ✅ | `common/mock/mock_server.py` + 上述用例断言 `state.audit_log` |
 | mp 账号越权访问 mis 审核接口 | 权限矩阵 | ✅ | `script/mp/api/test_article_flow_mock_api.py`（跨端 token 返回 403） |
-| 后台审核列表、行内按钮、进详情页点「通过」 | 场景法 | 📋 | 列表有 `script/mis/ui/test_audit_ui.py`（⚠️ 需地址）；详情页动作未实现 |
+| MIS 文章详情：有效 id / 不存在 id 返回 1002 / 状态过滤一致性 | 等价类 / 边界值 | ✅ | `script/mis/api/test_mis_news_detail_mock_api.py`（mock 离线可跑） |
+| 后台审核列表、进详情页查看/通过/驳回+原因 | 场景法 | ⚠️ | `script/mis/ui/test_audit_ui.py`、`script/mis/ui/test_audit_detail_ui.py`（需注入地址；离线契约守卫已跑） |
 
 ## 4. 列表 / 搜索 / 分页
 
@@ -52,6 +54,7 @@
 | 相邻页文章 id 不重复、返回条数 ≤ size | 契约 | ✅ | 同上 |
 | 字段契约：`code`、`data` 为列表、含指定字段 | 契约 | ✅ | `common/assertion.py::assert_fields` |
 | **抓包发现**：过滤字段是 `keyword`，`title` / `name` 会被后端忽略 | 探索性测试 | ✅ | `page/mp/api_mp.py` 注释 + 关键词回查用例 |
+| 内容管理页状态过滤 / 列表 / 搜索一致性 | 场景法 | ⚠️ | `script/mp/ui/test_content_ui.py`（需注入地址；离线契约守卫已跑） |
 
 ## 5. 详情与上下架
 
@@ -112,10 +115,10 @@
 
 | 项 | 原因 |
 | --- | --- |
-| 真实 UI 审核动作（进详情页点「通过」） | 行内按钮初始 disabled，需先点「查看」，未实现 |
+| 真实 UI 审核动作进详情页点「通过」 | 已用 `test_audit_detail_ui.py` 实现（查看/通过/驳回+原因），需注入地址才执行 |
 | 真实发布接口与真实 Web UI 执行 | 发布接口维护中；Web 用例需注入 `MP_BASE_URL` 才会跑，默认 skip |
 | 真机 App 用例 | 无 Appium 服务与真机 / 模拟器 |
 | 禅道缺陷记录、JMeter 脚本、弱网与兼容测试 | 属实习实践或口述内容，本仓库不含产物 |
 
-**统计**：190 条收集用例；默认离线 73 passed / 117 skipped，0 失败；
-34 条虚拟接口用例 + 15 条 App 组件单测 + 5 条定位器守护用例不依赖任何外部服务。
+**统计**：212 条收集用例；默认离线 82 passed / 130 skipped，0 失败；
+40 条虚拟接口用例 + 15 条 App 组件单测 + 5 条定位器守护用例不依赖任何外部服务。

@@ -12,7 +12,7 @@
 | 技术栈 | Python · Pytest · Requests · Selenium · Appium（PO 骨架）· YAML · Locust · adb · Jenkins · Allure |
 | 分层设计 | `base` 技术基座 / `page` PO + API Object + entry 门面 / `script` 用例 / `common` 基础设施 / `data` YAML |
 | 执行隔离 | 技术维度 `pytest -m api/web/app/mock` ＋ 业务维度 `TEST_TARGET=mp/mis/app` |
-| 用例规模 | **190 条**收集用例；默认离线 **73 passed / 117 skipped，0 失败** |
+| 用例规模 | **212 条**收集用例；默认离线 **82 passed / 130 skipped，0 失败** |
 | 业务闭环 | 发布 → 审核通过/驳回 → 状态流转 → APP 文章流可见性（有状态虚拟服务） |
 | 工程能力 | Jenkins 三阶段流水线 · Allure 报告 · 失败自动截图 · 日志 · 异常捕获 · 幂等重试 |
 | 文档 | [测试点矩阵](docs/test-points.md) · [技术难点与解决](docs/tech-highlights.md) · [真实运行证据](docs/evidence/) |
@@ -111,7 +111,7 @@ pip install -r requirements-perf.txt     # + 性能（Locust）
 
 # 2. 跑用例（默认不联网，需外部环境的用例自动 skip）
 pytest                          # 全部
-pytest -m api                   # 接口层（含 34 条虚拟接口用例）
+pytest -m api                   # 接口层（含 40 条虚拟接口用例）
 pytest -m mock                  # 只跑虚拟接口用例，完全不联网
 pytest -m web                   # Web UI（需先注入 MP_BASE_URL / MIS_BASE_URL）
 pytest -m app                   # App 端（含无需真机的滑动组件单测）
@@ -136,11 +136,11 @@ python -m common.report.report generate      # 需本机 allure CLI
 
 | 维度 | 数量 | 说明 |
 | --- | --- | --- |
-| 收集用例 | 190 | `pytest --collect-only` 展开参数化后的实际条目 |
+| 收集用例 | 212 | `pytest --collect-only` 展开参数化后的实际条目 |
 | 默认离线 | 不联网即可跑 | 虚拟接口、App 组件单测、数据契约守卫真实执行；需外部系统的用例自动 skip |
 | 真实接口 | mp / mis | 登录异常、列表分页与状态、详情/上下架、鉴权、审核参数 |
-| 虚拟接口 | 34 条 | 发布判定表、审核状态流转、APP 登录与文章流、**跨端完整业务闭环** |
-| Web UI | mp + mis | 登录正/反向、发布表单校验判定表、审核列表、搜索反向 |
+| 虚拟接口 | 40 条 | 发布判定表、审核状态流转、APP 登录与文章流、**跨端完整业务闭环**、**mis 文章详情** |
+| Web UI | mp + mis | 登录正/反向、发布表单校验判定表、内容管理状态筛选/搜索、审核列表与详情查看/通过/驳回、编辑器频道选择/存草稿、搜索反向 |
 | App | PO 覆盖登录/首页频道/文章详情 + 15 条滑动组件单测 | 坐标按屏比计算、循环滑动、指定区域查找、频道切换、详情交互，**无需真机** |
 | 用例设计方法 | 4 类 | 等价类、边界值、判定表、安全性，YAML 的 `method` 字段标注 |
 
@@ -164,7 +164,7 @@ headers、token 注入、JSON 解析全部照常走，用例只把 `ApiClient.ba
 指向它，**PO 层与用例代码零改动**。
 
 ```bash
-pytest -m mock          # 34 条虚拟接口用例，不联网、CI 可稳定执行
+pytest -m mock          # 40 条虚拟接口用例，不联网、CI 可稳定执行
 ```
 
 | 能力 | 说明 |
@@ -176,7 +176,8 @@ pytest -m mock          # 34 条虚拟接口用例，不联网、CI 可稳定执
 | 零依赖 | 仅用标准库 `ThreadingHTTPServer`，端口自动分配 |
 
 覆盖的链路：`mp 发布 -> mis 审核通过/驳回 -> 状态流转 -> APP 文章流可见性`，
-以及发布参数判定表、分页去重、关键词过滤、详情/上下架、APP 登录与鉴权。
+以及发布参数判定表、分页去重、关键词过滤、详情/上下架、APP 登录与鉴权、
+**mis 后台文章详情（有效/无效 id、鉴权、审核后状态过滤一致性）**。
 `mock_server` fixture 在根 `conftest.py`，每个用例独立端口与状态；
 `trust_env=False` 用来绕开本机代理对 `127.0.0.1` 的劫持。
 
@@ -232,6 +233,14 @@ MP_BASE_URL=https://<your-host> MIS_BASE_URL=https://<your-host> \
 > Web 用例的定位器与被测页面结构绑定，换站点需同步调整 `page/*/web_*.py`。
 > 未配置 `MP_BASE_URL` / `MIS_BASE_URL` 时该端用例**自动 skip**，不会因地址为空而报错。
 
+### 本轮完善的 Web 页面对象
+
+- **mp 内容管理页** `page/mp/web_content_page.py`：状态筛选 Tab（草稿/待审核/已发布/已下架）、关键词搜索、列表行/分页，对应 `script/mp/ui/test_content_ui.py`。
+- **mis 审核详情页** `page/mis/web_audit_detail_page.py`：列表「查看」进入详情，再执行通过/驳回（驳回需填原因），对应 `script/mis/ui/test_audit_detail_ui.py`。
+- **mp 编辑器扩展** `page/mp/web_editor_page.py`：新增频道下拉选择、存草稿、标签填写，对应 `script/mp/ui/test_editor_ext_ui.py`。
+
+三类页面均含「真实 UI 用例（无地址自动 skip）+ 离线契约守卫」，保证 CI 离线稳定、且数据被误删时即时暴露。
+
 UI 层另有三个坑，已在 `common/driver/web_driver.py` 内置规避，缺一个都跑不起来：
 
 1. **no_proxy 必须绕过 localhost**——环境若设置了 `http_proxy`，selenium 连
@@ -260,14 +269,14 @@ UI 自动化最怕页面改版。框架按 5 层把影响面收敛到最小：
 
 | 层 | 做法 | 仓库位置 |
 | --- | --- | --- |
-| 收敛改动面 | 定位器只写在 PO 类属性里，**用例层零定位器**；改版只改一个 PO 文件 | `page/*/web_*.py`、`page/app/app_{login,home,article,detail}_screen.py` |
+| 收敛改动面 | 定位器只写在 PO 类属性里，**用例层零定位器**；改版只改一个 PO 文件 | `page/*/web_*.py`、`page/app/app_{login,home,article,detail}_screen.py`、`page/mp/web_content_page.py`、`page/mis/web_audit_detail_page.py` |
 | 抗变定位策略 | 优先语义化 CSS / 相对 XPath（`normalize-space`、type 属性），不用绝对 XPath 与索引 | 上表「易错写法」 |
 | 运行时稳定性 | `WebDriverWait` 显式等待，避免 DOM 异步导致的 stale element；表格另有 `wait_rows()` 兜底 | `base/web_base.py`、`page/mp/web_search_page.py` |
 | 失效快速定位 | 失败自动截图 + 日志记录当时查找的定位器 + Allure 附件 | `conftest.py`、`common/logger/` |
 | 主动守护 | 静态扫描全部 PO 定位器：非法 by / 空值 / 绝对 XPath / 同文件重复，构建直接失败 | `script/mp/ui/test_locator_health.py` |
 
 守护用例用 AST 解析源码，**不 import selenium、不启动浏览器**，CI 只装基础依赖也能跑；
-当前覆盖 **12 个 PO 文件、42 个定位器**（含 App 端登录/首页/详情屏）。页面改版改完 PO 后跑 `pytest -m web`，
+当前覆盖 **14 个 PO 文件、53 个定位器**（含 App 端登录/首页/详情屏、mp 内容管理页、mis 审核详情页）。页面改版改完 PO 后跑 `pytest -m web`，
 定位器写错会立刻暴露，不必等浏览器或真机。
 
 > **取舍说明**：进阶做法是把定位器外置成 YAML、按版本切换，改版只换配置文件。
@@ -326,7 +335,7 @@ python perf/adb_monitor.py --pkg com.netease.newsreader.activity --duration 60
 `python -m common.report.report <action>` 接入流水线；`post.always`
 里用 Allure 插件聚合报告并归档 `reports/` 与 `logs/`。
 
-流水线默认**不设 RUN_REAL**：真实环境用例跳过，34 条虚拟接口用例照常执行，
+流水线默认**不设 RUN_REAL**：真实环境用例跳过，40 条虚拟接口用例照常执行，
 因此构建不依赖任何外部服务可用性，随时可稳定回归。
 
 ## 提交信息规范

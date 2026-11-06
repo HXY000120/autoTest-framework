@@ -32,6 +32,7 @@
 | App PO 覆盖不全 | 仅登录 + 列表，缺首页频道 / 详情 | 新增 `HomeScreen`（频道切换 / 文章流 / 刷新 / 搜索）与 `DetailScreen`（标题 / 正文 / 评论 / 点赞 / 返回），用例只调 entry 门面，真机缺失时自动 skip | `page/app/app_home_screen.py`、`page/app/app_detail_screen.py` |
 | 页面元素变动 | 改版后定位器易失效 | PO 集中管理 + 显式等待 + 失败截图/日志；再用 AST 静态扫描守护定位器合法性 | `script/mp/ui/test_locator_health.py`、README「页面元素变动的应对」 |
 | headless 窗口过小 | 登录框落在视口外，`send_keys` 报 `ElementNotInteractable` | 固定 `--window-size`；表格异步加载用 `wait_rows()` 兜底 | `common/driver/web_driver.py`、`page/mp/web_search_page.py` |
+| Web PO 深度不足 | MP 只有登录/发布/搜索，MIS 只有登录/审核列表，缺内容管理/审核详情/编辑器扩展 | 新增 `WebContentPage`（状态过滤/列表/搜索）、`WebAuditDetailPage`（查看/通过/驳回+原因）、扩展 `WebEditorPage`（频道/草稿/标签）；配套离线契约守卫验证 PO 与数据完整性 | `page/mp/web_content_page.py`、`page/mis/web_audit_detail_page.py`、`page/mp/web_editor_page.py` |
 
 ## 4. 有意做出的设计取舍
 
@@ -47,10 +48,10 @@
 
 | 指标 | 值 |
 | --- | --- |
-| 收集用例 | 190 |
-| 默认离线结果 | 73 passed / 117 skipped / **0 failed** |
-| 不依赖外部服务的用例 | 34 条虚拟接口 + 15 条 App 组件单测 + 5 条定位器守护 |
-| AST 守护覆盖 | 12 个 PO 文件 / 42 个定位器（含 App 端登录 / 首页 / 详情屏） |
+| 收集用例 | 212 |
+| 默认离线结果 | 82 passed / 130 skipped / **0 failed** |
+| 不依赖外部服务的用例 | 40 条虚拟接口 + 15 条 App 组件单测 + 5 条定位器守护 |
+| AST 守护覆盖 | 14 个 PO 文件 / 53 个定位器（含 App 端登录 / 首页 / 详情屏 / Web 新增页） |
 | 业务状态流转 | `待审核(1) → 通过(4) / 驳回(2) → 已发布(9)` |
 
 > 详细测试点拆解见 [test-points.md](test-points.md)，真实运行输出见 [evidence/](evidence/)。
