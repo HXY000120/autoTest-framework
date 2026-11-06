@@ -43,9 +43,10 @@ environments:
       platformName: Android
       platformVersion: "12"
       deviceName: emulator
-      # 示例包名，接入真实被测 App 时按实际包名替换
-      appPackage: com.example.news
-      appActivity: .activity.MainActivity
+      # 网易新闻（APP 端被测对象，暂定）。activity 以真机/模拟器
+      # `adb shell dumpsys window | findstr mCurrentFocus` 实际值为准
+      appPackage: com.netease.newsreader.activity
+      appActivity: .nr.phone.main.MainActivity
       automationName: UiAutomator2
 
   test:
@@ -58,7 +59,7 @@ environments:
         base_url: ""
         api_prefix: /service_6001
       app:
-        # APP 端被测对象为示例新闻 App，无自有接口域名
+        # APP 端被测对象为网易新闻 App，无自有接口域名（接口由 Mock Server 补齐）
         base_url: ""
         api_prefix: ""
         login_path: /app/v1_0/authorizations
@@ -76,9 +77,9 @@ environments:
       platformName: Android
       platformVersion: "12"
       deviceName: emulator
-      # 示例包名（需按实际被测 App 确认）
-      appPackage: com.example.news
-      appActivity: .activity.MainActivity
+      # 网易新闻包名（以真机/模拟器实际为准）
+      appPackage: com.netease.newsreader.activity
+      appActivity: .nr.phone.main.MainActivity
       automationName: UiAutomator2
 
   prod:
@@ -107,6 +108,6 @@ environments:
       platformName: Android
       platformVersion: "12"
       deviceName: emulator
-      appPackage: com.example.news
-      appActivity: .activity.MainActivity
+      appPackage: com.netease.newsreader.activity
+      appActivity: .nr.phone.main.MainActivity
       automationName: UiAutomator2

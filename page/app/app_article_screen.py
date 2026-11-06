@@ -1,6 +1,6 @@
 """app 用户端文章屏(App PO)：文章列表与详情。
 
-被测 App：示例新闻 App。resource-id 为占位值，需真机确认后替换。
+被测 App：网易新闻。resource-id 为按常见结构预估的占位值，需真机确认后替换。
 """
 
 
@@ -8,7 +8,7 @@ from selenium.webdriver.common.by import By
 
 from base.app_base import AppBase
 
-PKG = "com.example.news"
+PKG = "com.netease.newsreader.activity"
 
 
 class ArticleScreen(AppBase):

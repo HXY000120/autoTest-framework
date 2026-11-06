@@ -2,7 +2,7 @@
 
 依赖：本地已连接 adb 设备（USB 或模拟器）。
 用法：
-    python perf/adb_monitor.py --pkg com.example.news --duration 60
+    python perf/adb_monitor.py --pkg com.netease.newsreader.activity --duration 60
 输出：
     采样结果以 CSV 写入 reports/perf/<timestamp>.csv，便于后续绘图对比。
 """
@@ -104,7 +104,7 @@ def monitor(pkg: str, duration: int, interval: int = 2):
 def main():
     parser = argparse.ArgumentParser(description="adb 真机资源采集")
     parser.add_argument(
-        "--pkg", default="com.example.news", help="被测 App 包名"
+        "--pkg", default="com.netease.newsreader.activity", help="被测 App 包名（默认网易新闻）"
     )
     parser.add_argument("--duration", type=int, default=60, help="采集总时长(秒)")
     parser.add_argument("--interval", type=int, default=2, help="采样间隔(秒)")

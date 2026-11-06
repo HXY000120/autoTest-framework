@@ -30,6 +30,16 @@ class AppEntry:
         return self._page(ArticleScreen)
 
     @property
+    def home_screen(self):
+        from page.app.app_home_screen import HomeScreen
+        return self._page(HomeScreen)
+
+    @property
+    def detail_screen(self):
+        from page.app.app_detail_screen import DetailScreen
+        return self._page(DetailScreen)
+
+    @property
     def scroll_helper(self):
         from page.app.components.scroll_helper import ScrollHelper
         return self._page(ScrollHelper)
