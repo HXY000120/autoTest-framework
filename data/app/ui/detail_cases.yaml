@@ -1,0 +1,5 @@
+# app 用户端 - 文章详情用例数据
+- expect_detail: true
+  action: comment
+- expect_detail: true
+  action: like

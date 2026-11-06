@@ -1,0 +1,5 @@
+# app 用户端 - 首页/频道用例数据
+- channel: "推荐"
+  expect_articles: true
+- channel: "热点"
+  expect_articles: true

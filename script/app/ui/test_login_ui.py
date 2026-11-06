@@ -9,9 +9,10 @@ cases = load_data("app/ui/login_cases.yaml")
 @pytest.mark.app
 @pytest.mark.parametrize("case", cases)
 def test_app_login_ui(app_ui, case):
-    screen = app_ui.login_screen
-    screen.login(case["phone"], case["pwd"])
-
-    # 真实断言：登录成功后应进入文章流并取到首条标题
-    title = app_ui.article_screen.get_first_title()
-    assert title, "登录后未取到文章标题，可能未进入文章流或登录失败"
+    app_ui.login_screen.login(case["phone"], case["pwd"])
+    if case.get("expect_success"):
+        title = app_ui.article_screen.get_first_title()
+        assert title, "登录成功却未进入文章流/未取到标题"
+    else:
+        # 反向：停留在登录页或弹错误提示，不应进入文章流
+        assert app_ui.article_screen.article_count() == 0, "登录失败却进入了文章流"
