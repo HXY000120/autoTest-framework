@@ -220,18 +220,21 @@ python perf/adb_monitor.py --pkg com.netease.newsreader.activity --duration 60
 
 已实测（1 并发 / 5 秒）：登录 419ms、文章列表 103ms，**2 请求 0 失败**。
 
-## CI/CD
+## CI/CD（Jenkins）
 
-| 平台 | 配置 | 跑什么 |
+流水线定义在根目录 `Jenkinsfile`，Windows agent / 自建 Runner，
+配合 Jenkins Allure 插件出报告。
+
+| 阶段 | 内容 | 开关 |
 | --- | --- | --- |
-| GitHub Actions | `.github/workflows/test.yml` | 接口层（默认离线模式）+ 上传 Allure 原始结果 |
-| Jenkins（自建 Runner） | `Jenkinsfile` | 接口 / Web / App 三阶段，可按参数开关，Allure 插件出报告 |
+| 准备环境 | 建 venv、装依赖、清理上轮 Allure 结果 | — |
+| 接口自动化 | `pytest -m api --alluredir=reports/raw` | `RUN_REAL` 控制是否联调真实环境 |
+| Web 自动化 | 装 `requirements-web.txt` 后 `pytest -m web` | `RUN_WEB` |
+| App 自动化 | `pytest -m app`（含无需真机的滑动组件单测） | `RUN_APP` |
 
-云端 SaaS CI 只跑接口层：Web 需要浏览器驱动，App 需要真机或模拟器，
-这两类放在自建 Jenkins Runner 上。Jenkins 参数 `RUN_REAL` / `RUN_WEB` / `RUN_APP`
-分别控制真实联调、Web 阶段、App 阶段。`common/report/report.py` 的
-`clean` / `generate` 通过 `python -m common.report.report <action>` 接入流水线。
+`common/report/report.py` 的 `clean` / `generate` 通过
+`python -m common.report.report <action>` 接入流水线；`post.always`
+里用 Allure 插件聚合报告并归档 `reports/` 与 `logs/`。
 
-CI 的 `pytest -m api` 默认**不设 RUN_REAL**，因此真实接口用例跳过，但
-34 条虚拟接口用例照常执行——CI 不是空跑，发布/审核/APP 主流程在云端
-也能稳定回归，且不受教学环境可用性影响。
+流水线默认**不设 RUN_REAL**：真实环境用例跳过，34 条虚拟接口用例照常执行，
+因此构建不依赖任何外部服务可用性，随时可稳定回归。
