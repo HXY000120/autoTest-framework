@@ -99,6 +99,9 @@ python -m common.report.report generate      # 需本机 allure CLI
 用例数据全部在 `data/`，与 `script/` 路径严格对齐；多条离线「契约守卫」用例
 会在 YAML 被误删或字段写错时失败，防止用例悄悄缩水。
 
+完整的测试点拆解（按模块 / 用例设计方法 / 覆盖状态逐条对齐到用例文件）见
+**[docs/test-points.md](docs/test-points.md)**。
+
 **刻意跳过、不硬凑通过的部分**：依赖具体被测系统的用例（发布链路、
 搜索正向、APP 端真实接口）在默认离线模式下自动 skip，每条都写明原因；
 这些链路已由虚拟接口用例完整覆盖，见下一节。
