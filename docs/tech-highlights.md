@@ -29,6 +29,7 @@
 | --- | --- | --- | --- |
 | 滑动组件零位移 | 旧实现用 `(ratio, 1-ratio)` 当起止点，`ratio=0.5` 时两点重合，等于没滑 | 改为「屏高 × ratio」围绕屏幕中心对称展开，任意 ratio 都有非零位移且不出屏 | `page/app/components/scroll_helper.py::_swipe_span` |
 | 组件逻辑无法离线验证 | 真机 / Appium 不可用时整条链路全 skip | 用 FakeDriver 写 15 条单元测试，真实验证坐标计算、循环滑动停止条件、指定区域查找 | `script/app/ui/test_scroll_helper.py` |
+| App PO 覆盖不全 | 仅登录 + 列表，缺首页频道 / 详情 | 新增 `HomeScreen`（频道切换 / 文章流 / 刷新 / 搜索）与 `DetailScreen`（标题 / 正文 / 评论 / 点赞 / 返回），用例只调 entry 门面，真机缺失时自动 skip | `page/app/app_home_screen.py`、`page/app/app_detail_screen.py` |
 | 页面元素变动 | 改版后定位器易失效 | PO 集中管理 + 显式等待 + 失败截图/日志；再用 AST 静态扫描守护定位器合法性 | `script/mp/ui/test_locator_health.py`、README「页面元素变动的应对」 |
 | headless 窗口过小 | 登录框落在视口外，`send_keys` 报 `ElementNotInteractable` | 固定 `--window-size`；表格异步加载用 `wait_rows()` 兜底 | `common/driver/web_driver.py`、`page/mp/web_search_page.py` |
 
@@ -46,10 +47,10 @@
 
 | 指标 | 值 |
 | --- | --- |
-| 收集用例 | 184 |
-| 默认离线结果 | 73 passed / 111 skipped / **0 failed** |
+| 收集用例 | 190 |
+| 默认离线结果 | 73 passed / 117 skipped / **0 failed** |
 | 不依赖外部服务的用例 | 34 条虚拟接口 + 15 条 App 组件单测 + 5 条定位器守护 |
-| AST 守护覆盖 | 10 个 PO 文件 / 33 个定位器 |
+| AST 守护覆盖 | 12 个 PO 文件 / 42 个定位器（含 App 端登录 / 首页 / 详情屏） |
 | 业务状态流转 | `待审核(1) → 通过(4) / 驳回(2) → 已发布(9)` |
 
 > 详细测试点拆解见 [test-points.md](test-points.md)，真实运行输出见 [evidence/](evidence/)。

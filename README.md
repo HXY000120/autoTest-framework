@@ -1,6 +1,7 @@
 # 今日资讯平台测试项目 — 自动化测试框架（PO 模式）
 
 新闻资讯平台，含自媒体端（发布）、后台审核端（审核）、APP 端（浏览）三端。
+仓库只包含测试框架、用例、文档；所有真实地址与账号均通过环境变量注入。
 
 > **一键运行**：`pip install -r requirements.txt && pytest` —— 不联网、无需任何配置
 
@@ -11,7 +12,7 @@
 | 技术栈 | Python · Pytest · Requests · Selenium · Appium（PO 骨架）· YAML · Locust · adb · Jenkins · Allure |
 | 分层设计 | `base` 技术基座 / `page` PO + API Object + entry 门面 / `script` 用例 / `common` 基础设施 / `data` YAML |
 | 执行隔离 | 技术维度 `pytest -m api/web/app/mock` ＋ 业务维度 `TEST_TARGET=mp/mis/app` |
-| 用例规模 | **184 条**收集用例；默认离线 **73 passed / 111 skipped，0 失败** |
+| 用例规模 | **190 条**收集用例；默认离线 **73 passed / 117 skipped，0 失败** |
 | 业务闭环 | 发布 → 审核通过/驳回 → 状态流转 → APP 文章流可见性（有状态虚拟服务） |
 | 工程能力 | Jenkins 三阶段流水线 · Allure 报告 · 失败自动截图 · 日志 · 异常捕获 · 幂等重试 |
 | 文档 | [测试点矩阵](docs/test-points.md) · [技术难点与解决](docs/tech-highlights.md) · [真实运行证据](docs/evidence/) |
@@ -135,12 +136,12 @@ python -m common.report.report generate      # 需本机 allure CLI
 
 | 维度 | 数量 | 说明 |
 | --- | --- | --- |
-| 收集用例 | 184 | `pytest --collect-only` 展开参数化后的实际条目 |
+| 收集用例 | 190 | `pytest --collect-only` 展开参数化后的实际条目 |
 | 默认离线 | 不联网即可跑 | 虚拟接口、App 组件单测、数据契约守卫真实执行；需外部系统的用例自动 skip |
 | 真实接口 | mp / mis | 登录异常、列表分页与状态、详情/上下架、鉴权、审核参数 |
 | 虚拟接口 | 34 条 | 发布判定表、审核状态流转、APP 登录与文章流、**跨端完整业务闭环** |
 | Web UI | mp + mis | 登录正/反向、发布表单校验判定表、审核列表、搜索反向 |
-| App | 15 条离线单测 | 坐标按屏比计算、循环滑动、指定区域查找，**无需真机** |
+| App | PO 覆盖登录/首页频道/文章详情 + 15 条滑动组件单测 | 坐标按屏比计算、循环滑动、指定区域查找、频道切换、详情交互，**无需真机** |
 | 用例设计方法 | 4 类 | 等价类、边界值、判定表、安全性，YAML 的 `method` 字段标注 |
 
 用例数据全部在 `data/`，与 `script/` 路径严格对齐；多条离线「契约守卫」用例
@@ -152,6 +153,8 @@ python -m common.report.report generate      # 需本机 allure CLI
 **刻意跳过、不硬凑通过的部分**：依赖具体被测系统的用例（发布链路、
 搜索正向、APP 端真实接口）在默认离线模式下自动 skip，每条都写明原因；
 这些链路已由虚拟接口用例完整覆盖，见下一节。
+
+**APP 端**：被测对象为网易新闻（包名 `com.netease.newsreader.activity`），UI 由 Appium 驱动；该端无自有接口服务，由本地 Mock Server 补齐登录与文章流。页面定位器为按网易新闻常见结构预估的占位值，需在真机/模拟器用 `uiautomatorviewer` 复核后替换（框架只改 `page/app/` 即可，用例层零定位器）。
 
 ## 虚拟接口（Mock Server）
 
@@ -257,14 +260,14 @@ UI 自动化最怕页面改版。框架按 5 层把影响面收敛到最小：
 
 | 层 | 做法 | 仓库位置 |
 | --- | --- | --- |
-| 收敛改动面 | 定位器只写在 PO 类属性里，**用例层零定位器**；改版只改一个 PO 文件 | `page/*/web_*.py`、`page/app/app_*_screen.py` |
+| 收敛改动面 | 定位器只写在 PO 类属性里，**用例层零定位器**；改版只改一个 PO 文件 | `page/*/web_*.py`、`page/app/app_{login,home,article,detail}_screen.py` |
 | 抗变定位策略 | 优先语义化 CSS / 相对 XPath（`normalize-space`、type 属性），不用绝对 XPath 与索引 | 上表「易错写法」 |
 | 运行时稳定性 | `WebDriverWait` 显式等待，避免 DOM 异步导致的 stale element；表格另有 `wait_rows()` 兜底 | `base/web_base.py`、`page/mp/web_search_page.py` |
 | 失效快速定位 | 失败自动截图 + 日志记录当时查找的定位器 + Allure 附件 | `conftest.py`、`common/logger/` |
 | 主动守护 | 静态扫描全部 PO 定位器：非法 by / 空值 / 绝对 XPath / 同文件重复，构建直接失败 | `script/mp/ui/test_locator_health.py` |
 
 守护用例用 AST 解析源码，**不 import selenium、不启动浏览器**，CI 只装基础依赖也能跑；
-当前覆盖 **10 个 PO 文件、33 个定位器**。页面改版改完 PO 后跑 `pytest -m web`，
+当前覆盖 **12 个 PO 文件、42 个定位器**（含 App 端登录/首页/详情屏）。页面改版改完 PO 后跑 `pytest -m web`，
 定位器写错会立刻暴露，不必等浏览器或真机。
 
 > **取舍说明**：进阶做法是把定位器外置成 YAML、按版本切换，改版只换配置文件。
@@ -301,7 +304,7 @@ MP_BASE_URL=https://<your-host> \
     locust -f perf/locustfile.py --headless -u 10 -r 2 -t 30s
 
 # 真机资源采集（CPU / 内存 / 流量 / 电量 4 类，输出 CSV 到 reports/perf/）
-python perf/adb_monitor.py --pkg com.example.news --duration 60
+python perf/adb_monitor.py --pkg com.netease.newsreader.activity --duration 60
 ```
 
 示例验证（1 并发 / 5 秒）：登录 419ms、文章列表 103ms，**2 请求 0 失败**。
@@ -343,8 +346,6 @@ python perf/adb_monitor.py --pkg com.example.news --duration 60
 示例：`test: 新增登录参数边界用例`、`fix: 显式等待避免表格 stale element`。
 
 ## 关于
-
-个人实践项目，仓库只包含测试框架、用例、文档与运行证据；所有真实地址与账号均通过环境变量注入。
 
 - 联系邮箱：2401692547@qq.com
 - GitHub：https://github.com/HXY000120

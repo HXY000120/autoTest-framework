@@ -70,6 +70,9 @@
 | APP 登录、验证码错误 / 空手机号、手机号字符串化 | 等价类 / 边界值 | ✅ | 同上 + `script/app/api/test_app_api.py` |
 | 未登录拉取文章流返回 401 | 权限 | ✅ | 同上 |
 | 频道不在可视区：坐标计算 / 循环滑动 / 指定区域查找 | 算法单测 | ✅ | `script/app/ui/test_scroll_helper.py`（15 条，无需真机） |
+| 首页频道切换、文章流计数、下拉刷新 | 场景法 | ⚠️ | `script/app/ui/test_home_ui.py`（需 Appium + 真机，默认 skip） |
+| 文章详情：标题 / 正文 / 评论 / 点赞 / 返回 | 场景法 | ⚠️ | `script/app/ui/test_detail_ui.py`（需 Appium + 真机，默认 skip） |
+| 登录反向：空手机号 / 空密码仍停留在登录页 | 等价类 | ⚠️ | `script/app/ui/test_login_ui.py`（需 Appium + 真机，默认 skip） |
 | 真机登录与查找文章 | 场景法 | ⚠️ | `script/app/ui/test_login_ui.py`、`test_article_ui.py`（需 Appium + 真机，默认 skip） |
 
 ## 7. 接口专项
@@ -114,5 +117,5 @@
 | 真机 App 用例 | 无 Appium 服务与真机 / 模拟器 |
 | 禅道缺陷记录、JMeter 脚本、弱网与兼容测试 | 属实习实践或口述内容，本仓库不含产物 |
 
-**统计**：184 条收集用例；默认离线 73 passed / 111 skipped，0 失败；
+**统计**：190 条收集用例；默认离线 73 passed / 117 skipped，0 失败；
 34 条虚拟接口用例 + 15 条 App 组件单测 + 5 条定位器守护用例不依赖任何外部服务。
