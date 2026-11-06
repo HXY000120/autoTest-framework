@@ -1,4 +1,4 @@
-// 黑马头条自动化框架 - Jenkins Pipeline（Windows agent / 自建 Runner）
+// 今日资讯平台测试项目 - Jenkins Pipeline（Windows agent / 自建 Runner）
 // 依赖：Jenkins Allure Plugin；Web 阶段需本机浏览器，App 阶段需 adb 设备 + Appium 服务
 pipeline {
     agent any

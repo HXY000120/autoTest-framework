@@ -55,7 +55,7 @@ class ApiClient:
     def set_token(self, token: str):
         """设置登录态。
 
-        注意：heima-leadnews 网关只认 `token` 请求头，
+        注意：平台网关只认 `token` 请求头，
         使用 `Authorization: Bearer` 会被判为未登录（实测返回 401）。
         """
         self.token = token

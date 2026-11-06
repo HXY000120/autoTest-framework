@@ -40,7 +40,7 @@ environments:
       automationName: UiAutomator2
 
   test:
-    # 黑马头条（heima-leadnews Java 版）教学环境
+    # 今日资讯平台测试项目（Java 版）教学环境
     # 注意：密码每天变化，格式为 前缀 + 当天日期（如 20261101）
     endpoints:
       mp:

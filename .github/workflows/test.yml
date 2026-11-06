@@ -1,4 +1,4 @@
-name: autoTest CI
+name: 今日资讯平台测试项目 - 接口回归
 
 # 云端 SaaS CI 只跑接口层：Web 需要浏览器驱动，App 需要真机/模拟器，
 # 这两类放在自建 Jenkins Runner 上跑（见根目录 Jenkinsfile）。

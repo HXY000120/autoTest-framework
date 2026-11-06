@@ -1,6 +1,6 @@
 """mp 自媒体端接口对象(API Object)。只封装业务动作，不含断言。
 
-真实环境：heima-leadnews（黑马头条 Java 版）
+真实环境：今日资讯平台测试项目（Java 版服务端）
     完整地址 = base_url + api_prefix = https://heima-wemedia-java.itheima.net/wemedia/MEDIA
 
 接口可用性（2026-11 实测）：
