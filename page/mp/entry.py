@@ -46,6 +46,11 @@ class MpEntry:
         return self._page(ArticlePage)
 
     @property
+    def content_page(self):
+        from page.mp.web_content_page import ContentPage
+        return self._page(ContentPage)
+
+    @property
     def nav_bar(self):
         from page.mp.components.nav_bar import NavBar
         return self._page(NavBar)

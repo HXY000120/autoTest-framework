@@ -1,0 +1,15 @@
+# mis 审核详情页 - 查看 / 通过 / 驳回 用例
+# action: view（查看详情）| approve（通过）| reject（驳回，需 reason）
+- case_id: MIS_AUDITD_01
+  desc: 查看审核详情
+  method: 场景法
+  action: view
+- case_id: MIS_AUDITD_02
+  desc: 审核通过
+  method: 场景法
+  action: approve
+- case_id: MIS_AUDITD_03
+  desc: 审核驳回（带原因）
+  method: 场景法
+  action: reject
+  reason: 内容不符合规范

@@ -30,6 +30,7 @@ class ApiMis:
         self.url_auth_pass = "/user/api/v1/auth/authPass"
         self.url_auth_fail = "/user/api/v1/auth/authFail"
         self.url_news_list = "/wemedia/api/v1/news/list"
+        self.url_news_one = "/wemedia/api/v1/news/one"
         self.url_news_auth_pass = "/wemedia/api/v1/news/auth_pass"
         self.url_news_auth_fail = "/wemedia/api/v1/news/auth_fail"
 
@@ -84,6 +85,10 @@ class ApiMis:
     def audit_article_pass(self, article_id):
         """文章审核通过"""
         return self.client.post(self.url_news_auth_pass, json={"id": article_id})
+
+    def news_one(self, article_id):
+        """文章详情（后台视角）。"""
+        return self.client.get(f"{self.url_news_one}/{article_id}")
 
     def audit_article_fail(self, article_id, reason: str = "自动化测试驳回"):
         """文章审核驳回"""

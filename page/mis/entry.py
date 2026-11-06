@@ -28,3 +28,8 @@ class MisEntry:
     def audit_page(self):
         from page.mis.web_audit_page import AuditPage
         return self._page(AuditPage)
+
+    @property
+    def audit_detail_page(self):
+        from page.mis.web_audit_detail_page import AuditDetailPage
+        return self._page(AuditDetailPage)

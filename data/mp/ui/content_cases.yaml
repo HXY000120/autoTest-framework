@@ -1,0 +1,27 @@
+# mp 内容管理页 - 状态筛选 / 关键词搜索用例
+# action: status（点状态 Tab）| search（关键词搜索）
+- case_id: MP_CONTENT_01
+  desc: 待审核状态筛选
+  method: 等价类-有效
+  action: status
+  value: 待审核
+- case_id: MP_CONTENT_02
+  desc: 已发布状态筛选
+  method: 等价类-有效
+  action: status
+  value: 已发布
+- case_id: MP_CONTENT_03
+  desc: 草稿状态筛选
+  method: 等价类-有效
+  action: status
+  value: 草稿
+- case_id: MP_CONTENT_04
+  desc: 已下架状态筛选
+  method: 等价类-有效
+  action: status
+  value: 已下架
+- case_id: MP_CONTENT_05
+  desc: 关键词搜索
+  method: 场景法
+  action: search
+  value: 测试

@@ -37,9 +37,34 @@ class EditorPage(WebBase):
     def fill_title(self, title: str):
         self.input(self._title, title)
 
+    def fill_tag(self, tag: str):
+        """填写标签。多标签以英文逗号分隔。"""
+        self.input(self._tag, tag)
+
+    def select_channel(self, channel: str):
+        """选择频道（Element UI 级联/下拉）。点击输入框展开后点含文本的 option。"""
+        self.click(self._channel)
+        time.sleep(0.5)
+        from selenium.webdriver.common.by import By
+
+        options = self.driver.find_elements(
+            By.CSS_SELECTOR, ".el-select-dropdown__item"
+        )
+        for opt in options:
+            if channel in opt.text:
+                opt.click()
+                time.sleep(0.3)
+                return
+        raise AssertionError(f"频道下拉未找到选项：{channel}")
+
     def submit(self):
         """点击「提交审核」。表单校验不通过时不会真正写库，可安全用于用例。"""
         self.click(self._btn_submit)
+        time.sleep(1)
+
+    def save_draft(self):
+        """点击「存入草稿」。"""
+        self.click(self._btn_draft)
         time.sleep(1)
 
     def validation_messages(self):

@@ -1,0 +1,10 @@
+# mp 发布页扩展 - 频道选择 / 存草稿 用例
+- case_id: MP_EDITOREXT_01
+  desc: 选择频道
+  method: 等价类-有效
+  channel: 科技
+- case_id: MP_EDITOREXT_02
+  desc: 存草稿
+  method: 场景法
+  channel: 科技
+  title: 草稿文章标题
