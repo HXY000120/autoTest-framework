@@ -37,9 +37,13 @@ class AuditDetailPage(WebBase):
         self.open(f"{base_url}/#/news/index")
         from selenium.webdriver.support.ui import WebDriverWait
 
-        # 列表异步拉取，等首行出现再操作（实测 4~6s）
-        WebDriverWait(self.driver, 20).until(
-            lambda d: len(d.find_elements(*self._rows)) > 0
+        # 登录后默认在用户审核页；SPA 切换时旧 DOM 仍在，只等「有行」会被
+        # 用户审核的行骗过（点「查看」会进错详情）。等内容审核独有的
+        # 「单图文章 / 多图文章」列出现。
+        WebDriverWait(self.driver, 25).until(
+            lambda d: any(
+                "图文章" in r.text for r in d.find_elements(*self._rows)
+            )
         )
         time.sleep(1)  # 表格渲染完成后 DOM 可能整体替换，留出稳定窗口
 
@@ -47,17 +51,27 @@ class AuditDetailPage(WebBase):
         """点击列表首个「查看」进入详情页。
 
         不持有 tr 引用：表格数据刷新后旧元素会 stale，直接按文本定位更稳。
+        高频登录后列表加载偶发变慢，失败时刷新重试一次。
         """
         from selenium.webdriver.support import expected_conditions as EC
         from selenium.webdriver.support.ui import WebDriverWait
 
-        el = WebDriverWait(self.driver, 15).until(
-            EC.element_to_be_clickable(
-                (By.XPATH, "//span[normalize-space(text())='查看']")
-            )
-        )
-        el.click()
-        time.sleep(2)
+        for attempt in range(2):
+            try:
+                el = WebDriverWait(self.driver, 25).until(
+                    EC.element_to_be_clickable(
+                        (By.XPATH, "//span[normalize-space(text())='查看']")
+                    )
+                )
+                el.click()
+                time.sleep(2)
+                return
+            except Exception:
+                if attempt == 0:
+                    self.driver.refresh()
+                    time.sleep(3)
+                else:
+                    raise
 
     def detail_visible(self) -> bool:
         return bool(self.find_all(self._detail_mark)) or "/news/detail" in self.driver.current_url

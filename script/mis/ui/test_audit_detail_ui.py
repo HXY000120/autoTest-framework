@@ -51,19 +51,23 @@ def test_mis_audit_detail(mis_web, case):
 @pytest.mark.web
 @pytest.mark.mis
 def test_mis_audit_detail_elements(mis_web):
-    """审核页关键入口：列表存在且每行提供「查看」操作。"""
+    """审核页关键入口：列表渲染完成后，行内应提供查看/通过/驳回。"""
     from selenium.webdriver.common.by import By
+    from selenium.webdriver.support.ui import WebDriverWait
 
     page = _login_and_open(mis_web)
     d = page.driver
-    rows = d.find_elements(By.CSS_SELECTOR, ".el-table__row")
-    assert rows, "审核列表没有数据行"
-    assert rows[0].find_elements(
-        By.XPATH, ".//span[normalize-space(text())='查看']"
-    ), "行内未提供「查看」入口"
-    assert rows[0].find_elements(
-        By.XPATH, ".//span[normalize-space(text())='通过']"
-    ), "行内未提供「通过」入口"
+
+    # 列表异步渲染，先显式等「查看」出现，避免高频登录后加载慢导致抢跑
+    WebDriverWait(d, 20).until(
+        lambda x: len(
+            x.find_elements(By.XPATH, "//span[normalize-space(text())='查看']")
+        ) > 0
+    )
+    for label in ("查看", "通过", "驳回"):
+        assert d.find_elements(
+            By.XPATH, f"//span[normalize-space(text())='{label}']"
+        ), f"列表未提供「{label}」入口"
 
 
 @pytest.mark.web

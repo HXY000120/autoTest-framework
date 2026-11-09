@@ -9,6 +9,8 @@
 """
 
 
+import time
+
 from selenium.webdriver.common.by import By
 
 from base.web_base import WebBase
@@ -40,6 +42,17 @@ class AuditPage(WebBase):
         )
 
     def row_texts(self):
+        """返回每行文本。
+
+        列表异步刷新会整体替换 DOM，遍历中可能 stale，失败重取最多 3 次。
+        """
+        from selenium.common.exceptions import StaleElementReferenceException
+
+        for _ in range(3):
+            try:
+                return [r.text for r in self.find_all(self._article_rows)]
+            except StaleElementReferenceException:
+                time.sleep(1)
         return [r.text for r in self.find_all(self._article_rows)]
 
     def audit(self, action: str):
