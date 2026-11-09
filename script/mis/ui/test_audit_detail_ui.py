@@ -15,28 +15,22 @@ from common.utils.data_reader import load_data
 cases = load_data("mis/ui/audit_detail_cases.yaml")
 
 
-def _login_and_open(mis_web):
-    base = get_endpoint("mis")["base_url"]
-    name, pwd = get_credentials("mis")
-    login = mis_web.login_page
-    login.open(f"{base}/#/login")
-    login.login(name, pwd)
-    login.wait_for_login()
-    page = mis_web.audit_detail_page
-    page.open_audit(base)
-    return page
+def _ensure_list(entry):
+    """用例间复位到内容审核列表（模块级复用登录，避免高频登录被限流）。"""
+    entry.audit_detail_page.open_audit(get_endpoint("mis")["base_url"])
+    return entry.audit_detail_page
 
 
 @pytest.mark.web
 @pytest.mark.mis
 @pytest.mark.parametrize("case", cases, ids=[c["case_id"] for c in cases])
-def test_mis_audit_detail(mis_web, case):
+def test_mis_audit_detail(mis_web_logged_in, case):
     """查看审核详情（只读）；真实提交审核需 REAL_AUDIT=1。
 
     审核动作会真实改变文章状态并消耗待审核数据。默认只验证详情页可达与
     入口存在，避免前一个用例把唯一待审核文章审掉、后面用例找不到按钮。
     """
-    page = _login_and_open(mis_web)
+    page = _ensure_list(mis_web_logged_in)
     page.view_first()
     assert page.detail_visible(), "点击「查看」后详情未展示"
 
@@ -50,12 +44,12 @@ def test_mis_audit_detail(mis_web, case):
 
 @pytest.mark.web
 @pytest.mark.mis
-def test_mis_audit_detail_elements(mis_web):
+def test_mis_audit_detail_elements(mis_web_logged_in):
     """审核页关键入口：列表渲染完成后，行内应提供查看/通过/驳回。"""
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support.ui import WebDriverWait
 
-    page = _login_and_open(mis_web)
+    page = _ensure_list(mis_web_logged_in)
     d = page.driver
 
     # 列表异步渲染，先显式等「查看」出现，避免高频登录后加载慢导致抢跑

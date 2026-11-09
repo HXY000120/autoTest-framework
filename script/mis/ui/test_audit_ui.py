@@ -18,16 +18,9 @@ STATUSES = {"待人工审核", "已发布", "已驳回", "已下架"}
 @pytest.mark.web
 @pytest.mark.mis
 @pytest.mark.parametrize("case", cases)
-def test_mis_audit_ui(mis_web, case):
+def test_mis_audit_ui(mis_web_logged_in, case):
     base = get_endpoint("mis")["base_url"]
-    name, pwd = get_credentials("mis")
-
-    login = mis_web.login_page
-    login.open(f"{base}/#/login")
-    login.login(name, pwd)
-    login.wait_for_login()
-
-    page = mis_web.audit_page
+    page = mis_web_logged_in.audit_page
     page.open_audit(base)
 
     rows = page.row_texts()
