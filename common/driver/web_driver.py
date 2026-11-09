@@ -47,6 +47,8 @@ def get_web_driver(
         options.add_argument("--headless=new")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
+    if not headless:
+        options.add_argument("--start-maximized")
     options.add_argument(f"--user-agent={DEFAULT_UA}")
     if not grid:
         # 浏览器直连被测站点；若你的网络必须走代理，改用 WEB_DIRECT=0 关闭
@@ -54,10 +56,20 @@ def get_web_driver(
             options.add_argument("--no-proxy-server")
 
     if grid:
-        return webdriver.Remote(command_executor=grid_url, options=options)
-    if browser == "edge":
-        return webdriver.Edge(options=options)
-    return webdriver.Chrome(options=options)
+        driver = webdriver.Remote(command_executor=grid_url, options=options)
+    elif browser == "edge":
+        driver = webdriver.Edge(options=options)
+    else:
+        driver = webdriver.Chrome(options=options)
+
+    # 有头模式下再显式最大化一次，避免 --start-maximized 在某些版本不生效；
+    # headless 下窗口尺寸由 --window-size 决定，不能调 maximize_window（会变 0 尺寸）
+    if not headless:
+        try:
+            driver.maximize_window()
+        except Exception:
+            pass
+    return driver
 
 
 def quit_web_driver(driver):

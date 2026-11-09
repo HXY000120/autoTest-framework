@@ -5,6 +5,8 @@
 
 真实地址通过 MIS_BASE_URL 注入；未配置时整体 skip，不影响离线回归。
 """
+import os
+
 import pytest
 
 from common.config.settings import get_credentials, get_endpoint
@@ -29,11 +31,17 @@ def _login_and_open(mis_web):
 @pytest.mark.mis
 @pytest.mark.parametrize("case", cases, ids=[c["case_id"] for c in cases])
 def test_mis_audit_detail(mis_web, case):
-    """查看详情 / 审核通过 / 审核驳回：动作执行不抛异常，详情弹窗应可打开。"""
+    """查看审核详情（只读）；真实提交审核需 REAL_AUDIT=1。
+
+    审核动作会真实改变文章状态并消耗待审核数据。默认只验证详情页可达与
+    入口存在，避免前一个用例把唯一待审核文章审掉、后面用例找不到按钮。
+    """
     page = _login_and_open(mis_web)
     page.view_first()
     assert page.detail_visible(), "点击「查看」后详情未展示"
 
+    if os.getenv("REAL_AUDIT") != "1":
+        return
     if case["action"] == "approve":
         page.approve()
     elif case["action"] == "reject":
@@ -48,9 +56,14 @@ def test_mis_audit_detail_elements(mis_web):
 
     page = _login_and_open(mis_web)
     d = page.driver
-    assert d.find_elements(
-        By.XPATH, "//button[contains(., '查看')]"
-    ), "审核列表未提供「查看」入口"
+    rows = d.find_elements(By.CSS_SELECTOR, ".el-table__row")
+    assert rows, "审核列表没有数据行"
+    assert rows[0].find_elements(
+        By.XPATH, ".//span[normalize-space(text())='查看']"
+    ), "行内未提供「查看」入口"
+    assert rows[0].find_elements(
+        By.XPATH, ".//span[normalize-space(text())='通过']"
+    ), "行内未提供「通过」入口"
 
 
 @pytest.mark.web

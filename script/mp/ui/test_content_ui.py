@@ -30,15 +30,21 @@ def _login_and_open(mp_web):
 def test_mp_content_actions(mp_web, case):
     """状态筛选 / 关键词搜索：动作执行后页面表格区域必须仍可用（不报错）。"""
     page = _login_and_open(mp_web)
+    all_count = page.row_count()  # 「全部」下的卡片数
+
     if case["action"] == "status":
         page.select_status(case["value"])
+        filtered = page.row_count()
+        assert filtered <= all_count, (
+            f"筛选「{case['value']}」返回 {filtered} 条，多于全部 {all_count}"
+        )
     else:
         page.search(case["value"])
-
-    # 列表可能为空（环境数据少），但表格容器 / 分页必须存在，证明动作生效
-    assert page.row_count() >= 0
-    # 至少表格区域渲染出来（有行或空态提示），不抛 ElementNotFound
-    page.has_pagination() or page.row_count() >= 0
+        titles = page.titles()
+        if titles:
+            assert any(case["value"] in t for t in titles), (
+                f"搜索结果未命中关键词「{case['value']}」：{titles}"
+            )
 
 
 @pytest.mark.web
@@ -52,7 +58,9 @@ def test_mp_content_page_elements(mp_web):
     assert d.find_elements(
         By.CSS_SELECTOR, "input[placeholder='请输入关键字']"
     ), "未找到内容管理页搜索框"
-    assert page.row_count() >= 0  # 表格区域渲染成功
+    assert page.status_options(), "未找到状态筛选 radio"
+    assert page.row_count() > 0, "内容列表没有任何卡片"
+    assert page.has_pagination(), "未找到分页组件"
 
 
 @pytest.mark.web
@@ -62,7 +70,7 @@ def test_mp_content_case_contract():
     actions = {c["action"] for c in cases}
     assert {"status", "search"} <= actions, f"覆盖不全: {actions}"
     statuses = {c["value"] for c in cases if c["action"] == "status"}
-    assert {"草稿", "待审核", "已发布", "已下架"} <= statuses, (
+    assert {"草稿", "待审核", "审核通过", "审核失败"} <= statuses, (
         f"状态 Tab 覆盖不全: {statuses}"
     )
     for c in cases:

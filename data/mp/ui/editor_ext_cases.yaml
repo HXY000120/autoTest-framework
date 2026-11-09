@@ -2,9 +2,9 @@
 - case_id: MP_EDITOREXT_01
   desc: 选择频道
   method: 等价类-有效
-  channel: 科技
+  channel: Python
 - case_id: MP_EDITOREXT_02
   desc: 存草稿
   method: 场景法
-  channel: 科技
+  channel: Python
   title: 草稿文章标题
