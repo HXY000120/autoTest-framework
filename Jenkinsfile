@@ -30,7 +30,8 @@ pipeline {
         stage('接口自动化') {
             steps {
                 withEnv(["RUN_REAL=${params.RUN_REAL ? '1' : '0'}"]) {
-                    bat '.venv\\Scripts\\python.exe -m pytest -m api --alluredir=reports/raw'
+                    // 接口阶段不收集 UI 目录：避免 CI 只装基础依赖时因 selenium 缺失中断收集
+                    bat '.venv\\Scripts\\python.exe -m pytest -m api --ignore=script/app/ui --ignore=script/mp/ui --ignore=script/mis/ui --alluredir=reports/raw'
                 }
             }
         }
@@ -55,7 +56,11 @@ pipeline {
 
     post {
         always {
-            allure includeProperties: false, results: [[path: 'reports/raw']]
+            // Allure 命令行由插件联网下载，离线/受限网络下会失败；
+            // 报告生成失败只降级为 UNSTABLE，不让整条流水线变红。
+            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                allure includeProperties: false, results: [[path: 'reports/raw']]
+            }
             archiveArtifacts artifacts: 'reports/**, logs/**', allowEmptyArchive: true
         }
     }

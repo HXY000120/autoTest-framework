@@ -9,7 +9,10 @@
 import pytest
 
 # 缺 selenium 时整个模块跳过（而不是收集报错），保证 CI 只装基础依赖也能收集
-pytest.importorskip("selenium", reason="滑动组件单测依赖 selenium 的 WebDriverWait")
+pytest.importorskip(
+    "selenium.common.exceptions",
+    reason="滑动组件单测依赖 selenium 的 WebDriverWait",
+)
 from selenium.common.exceptions import NoSuchElementException  # noqa: E402
 from selenium.webdriver.common.by import By  # noqa: E402
 
