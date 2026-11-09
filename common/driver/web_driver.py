@@ -27,11 +27,21 @@ DEFAULT_UA = (
 
 
 def get_web_driver(
-    browser: str = "edge",
-    headless: bool = True,
+    browser: str = None,
+    headless: bool = None,
     grid: bool = False,
     grid_url: str = "http://127.0.0.1:4444/wd/hub",
 ):
+    """创建 WebDriver。
+
+    browser / headless 可由环境变量控制，便于本地联调时观察浏览器：
+        BROWSER=edge|chrome   默认 edge
+        HEADLESS=0            本地有头运行（默认无头，CI 用）
+    """
+    browser = (browser or os.getenv("BROWSER", "edge")).lower()
+    if headless is None:
+        headless = os.getenv("HEADLESS", "1") != "0"
+
     options = EdgeOptions() if browser == "edge" else ChromeOptions()
     if headless:
         options.add_argument("--headless=new")

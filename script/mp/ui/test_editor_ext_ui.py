@@ -32,8 +32,6 @@ def _login_and_open(mp_web):
 def test_mp_editor_ext(mp_web, case):
     """频道选择 / 存草稿：操作后页面不抛异常（不强制断言提示文案）。"""
     editor = _login_and_open(mp_web)
-    if case["action"] == "status":  # 兼容占位（实际只用 channel）
-        pass
     editor.fill_title(case.get("title", "扩展用例标题"))
     editor.select_channel(case["channel"])
     if case.get("title"):
