@@ -30,12 +30,21 @@ def _login_and_open(mp_web):
 @pytest.mark.mp
 @pytest.mark.parametrize("case", cases, ids=[c["case_id"] for c in cases])
 def test_mp_editor_ext(mp_web, case):
-    """频道选择 / 存草稿：操作后页面不抛异常（不强制断言提示文案）。"""
+    """频道选择 / 存草稿：验证操作结果，而不是「不报错就算过」。"""
     editor = _login_and_open(mp_web)
     editor.fill_title(case.get("title", "扩展用例标题"))
     editor.select_channel(case["channel"])
+
+    # 断言 1：频道输入框的值必须是所选频道，否则等于没选上
+    actual = editor.selected_channel()
+    assert actual == case["channel"], (
+        f"频道未选中，期望 {case['channel']}，实际 {actual!r}"
+    )
+
     if case.get("title"):
-        editor.save_draft()
+        toast = editor.save_draft()
+        # 断言 2：存草稿必须有成功反馈（线上实测提示「新增文章成功」）
+        assert "成功" in toast, f"存草稿未出现成功提示，实际提示：{toast!r}"
 
 
 @pytest.mark.web

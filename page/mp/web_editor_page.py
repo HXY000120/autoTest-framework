@@ -63,9 +63,22 @@ class EditorPage(WebBase):
         time.sleep(1)
 
     def save_draft(self):
-        """点击「存入草稿」。"""
+        """点击「存入草稿」，返回页面提示文案（成功时含「成功」）。"""
         self.click(self._btn_draft)
         time.sleep(1)
+        return self.message_text()
+
+    def selected_channel(self) -> str:
+        """返回频道输入框当前值，用于断言「确实选中了」。"""
+        return self.find(self._channel).get_attribute("value") or ""
+
+    def message_text(self) -> str:
+        """当前页面顶部提示文案（Element UI message / notification）。"""
+        locs = (
+            By.CSS_SELECTOR,
+            ".el-message, .el-message-box, .el-notification",
+        )
+        return " ".join(e.text.strip() for e in self.find_all(locs) if e.text.strip())
 
     def validation_messages(self):
         """返回当前页面所有校验提示文本。"""
