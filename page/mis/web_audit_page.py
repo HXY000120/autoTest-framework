@@ -23,6 +23,22 @@ class AuditPage(WebBase):
     def article_count(self) -> int:
         return len(self.find_all(self._article_rows))
 
+    def open_audit(self, base_url: str):
+        """打开「内容审核」列表页并确认已切换过去。
+
+        登录后默认在 /#/auth/index（用户审核）。SPA 路由切换时旧页 DOM
+        仍然存在，只等「有行」会被用户审核的行骗过（6 列 vs 内容审核 9 列）。
+        因此等「单图文章 / 多图文章」这类内容审核独有列出现。
+        """
+        self.open(f"{base_url}/#/news/index")
+        from selenium.webdriver.support.ui import WebDriverWait
+
+        WebDriverWait(self.driver, 25).until(
+            lambda d: any(
+                "图文章" in r.text for r in d.find_elements(*self._article_rows)
+            )
+        )
+
     def row_texts(self):
         return [r.text for r in self.find_all(self._article_rows)]
 
