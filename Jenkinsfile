@@ -29,18 +29,11 @@ pipeline {
 
         stage('接口自动化') {
             steps {
-                script {
-                    // 密码按日期轮换：前缀存 Jenkins 全局环境变量，这里拼当天日期，
-                    // 仓库内不出现任何真实密码。
-                    def today = new Date().format('yyyyMMdd')
-                    withEnv([
-                        "RUN_REAL=${params.RUN_REAL ? '1' : '0'}",
-                        "MP_PASSWORD=${env.MP_PWD_PREFIX ? env.MP_PWD_PREFIX + today : ''}",
-                        "MIS_PASSWORD=${env.MIS_PWD_PREFIX ? env.MIS_PWD_PREFIX + today : ''}",
-                    ]) {
-                        // 接口阶段不收集 UI 目录：避免 CI 只装基础依赖时因 selenium 缺失中断收集
-                        bat '.venv\\Scripts\\python.exe -m pytest -m api --ignore=script/app/ui --ignore=script/mp/ui --ignore=script/mis/ui --alluredir=reports/raw'
-                    }
+                // 密码按日轮换由 Python 侧解析：全局环境变量 MP_PASSWORD_PATTERN
+                // 形如 842itheima.CN032@{date}，运行时替换为当天日期。
+                withEnv(["RUN_REAL=${params.RUN_REAL ? '1' : '0'}"]) {
+                    // 接口阶段不收集 UI 目录：避免 CI 只装基础依赖时因 selenium 缺失中断收集
+                    bat '.venv\\Scripts\\python.exe -m pytest -m api --ignore=script/app/ui --ignore=script/mp/ui --ignore=script/mis/ui --alluredir=reports/raw'
                 }
             }
         }
@@ -49,15 +42,8 @@ pipeline {
             when { expression { params.RUN_WEB } }
             steps {
                 bat '.venv\\Scripts\\python.exe -m pip install -r requirements-web.txt'
-                script {
-                    def today = new Date().format('yyyyMMdd')
-                    withEnv([
-                        "RUN_REAL=${params.RUN_REAL ? '1' : '0'}",
-                        "MP_PASSWORD=${env.MP_PWD_PREFIX ? env.MP_PWD_PREFIX + today : ''}",
-                        "MIS_PASSWORD=${env.MIS_PWD_PREFIX ? env.MIS_PWD_PREFIX + today : ''}",
-                    ]) {
-                        bat '.venv\\Scripts\\python.exe -m pytest -m web --alluredir=reports/raw'
-                    }
+                withEnv(["RUN_REAL=${params.RUN_REAL ? '1' : '0'}"]) {
+                    bat '.venv\\Scripts\\python.exe -m pytest -m web --alluredir=reports/raw'
                 }
             }
         }

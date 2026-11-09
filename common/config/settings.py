@@ -90,9 +90,13 @@ def get_credentials(end_name: str, env: str = None):
         )
     prefix = end_name.upper()
     username = os.getenv(f"{prefix}_USERNAME") or creds.get("username", "")
+    # 完整密码优先（临时联调）
     if os.getenv(f"{prefix}_PASSWORD") is not None:
         return username, os.environ[f"{prefix}_PASSWORD"]
-    pattern = creds.get("password_pattern", "")
+    # 密码模板：环境变量优先于 yaml，支持 {date} 占位（密码按日轮换）
+    pattern = os.getenv(f"{prefix}_PASSWORD_PATTERN") or creds.get(
+        "password_pattern", ""
+    )
     return username, pattern.replace("{date}", datetime.now().strftime("%Y%m%d"))
 
 
